@@ -1,0 +1,20 @@
+{
+  "name": "chatapp-frontend",
+  "version": "0.1",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack"
+  },
+  "devDependencies": {
+    "css-loader": "^1.0.1",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2"
+  },
+  "dependencies": {
+    "jquery": "^3.3.1",
+    "lodash": "^4.17.11",
+    "materialize-css": "^1.0.0"
+  }
+}
