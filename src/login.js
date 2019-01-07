@@ -84,7 +84,7 @@ export class login {
 				chatapp.socket.emit('action', 'login', {
 					username: username,
 					password: password
-				}).once('login', (data) => {
+				}, (data) => {
 					if(data.success) {
 						chatapp.username = data.username;
 						chatapp.userid = data.userid;
@@ -93,11 +93,7 @@ export class login {
 					} else {
 						$('#login-form input').prop('disabled', false);
 						$('#login-submit').removeClass(['pulse', 'green']);
-
-						if(data.type == 'toast') chatapp.toast('red', 'warning', data.message);
-						else $('#register-'+ data.type).one('change', () => {
-							$('#register-'+ data.type +'-helper').addClass('scale-out');
-						}).parent().children('span').text(data.message).removeClass('scale-out');
+						chatapp.toast('red', 'warning', data.error);
 					}
 				});
 			}, 1000);

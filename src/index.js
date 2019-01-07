@@ -1,12 +1,14 @@
 import _ from 'lodash';
-import 'materialize-css/dist/css/materialize.min.css'
-import 'materialize-css/dist/js/materialize.min.js'
+ 
+const $ = require('jquery')
+const jQuery  = $;
+window.$      = $;
+window.jQuery = $;
+
+require('materialize-loader');
+
 
 require('./index.html');
-
-var $ = require('jquery');
-window.jQuery = $;
-window.$ = $;
 
 class CHATAPP {
 
@@ -27,10 +29,12 @@ class CHATAPP {
 
 		this.socket.emit('action', 'authenticate', {
 			token: localStorage.getItem('authToken')
-		}).on('authenticate-return', (data) => {
-			this.userid   = data.userId;
-			this.username = data.username;
-			this.router.goTo('main');
+		}, (data) => {
+			if(data.success) {
+				this.userid   = data.userId;
+				this.username = data.username;
+				this.router.goTo('main');
+			} else this.router.goTo('login');
 		});
 	}
 

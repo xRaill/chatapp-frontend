@@ -100,17 +100,24 @@ export class register {
 					username: username,
 					password: password,
 					passrpt:  passrpt
-				}).once('register', (data) => {
+				}, (data) => {
 					if(data.success) {
 						chatapp.toast('green', 'check', 'Registration complete.');
 					} else {
 						$('#login-form input').prop('disabled', false);
 						$('#login-submit').removeClass(['pulse', 'green']);
 
-						if(data.type == 'toast') chatapp.toast('red', 'warning', data.message);
-						else $('#register-'+ data.type).one('change', () => {
-							$('#register-'+ data.type +'-helper').addClass('scale-out');
-						}).parent().children('span').text(data.message).removeClass('scale-out');
+						if(data.error == 'error.username-invalid') $('#register-username').one('change', () => {
+							$('#register-username-helper').addClass('scale-out');
+						}).parent().children('span').text('Username invalid').removeClass('scale-out');
+
+						if(data.error == 'error.username-already-exists') $('#register-username').one('change', () => {
+							$('#register-username-helper').addClass('scale-out');
+						}).parent().children('span').text('Username already exists').removeClass('scale-out');
+
+						else if(data.error == 'error.password-invalid') $('#register-password').one('change', () => {
+							$('#register-password-helper').addClass('scale-out');
+						}).parent().children('span').text('Password invalid').removeClass('scale-out');
 					}
 				});
 			}, 1000);

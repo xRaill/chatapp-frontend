@@ -6,9 +6,10 @@ export class main {
 
 		this.app = $(`
 			<div class="row h-4">
-				<div id="main-menu" class="col s12 m3 no-padding">
+				<div id="main-menu" class="col s12 m3 no-padding z-depth-1">
 
 					<div id="main-top" class="h-1 blue lighten-2 z-depth-1">
+						<div id="logout" class="waves-effect right"><i class="material-icons">logout</i></div>
 						<div id="main-user"> `+ chatapp.username +` </div>
 						<div id="main-nav" class="auto-margin moveLeft">
 							<i id="main-chats" class="material-icons waves-effect center">chat</i>
@@ -22,19 +23,26 @@ export class main {
 
 					<div id="menu-list" class=>
 						<div id="menu-rooms"></div>
-						<div id="menu-friends"></div>
-						<div id="menu-friends-add" 
-							class="btn-floating btn-large green waves-effect waves-light hide-on-small-only scale-transition scale-out">
-							<i class="large material-icons">add</i>
+						<div id="menu-friends">
+							<div id="friend-request" class="teal waves-effect z-depth-1 center-align" style="display:none;">
+							<span id="friend-request-len">0</span> Friend request(s)</div>
+							<div id="friend-request-wrapper" class="popup-wrapper valign-wrapper" style="display:none;">
+								<div id="friend-request-list" class="popup">
+									<div class="popup-top center">
+										<div class="popup-close waves-effect grey-text"><i class="material-icons">close</i></div>
+										<h5>Friend request(s)</h5>
+									</div>
+								</div>
+							</div>
 						</div>
-						<div id="menu-friends-add-mobile" 
-							class="btn-floating btn-large green waves-effect waves-light hide-on-med-and-up scale-transition scale-out">
+						<div id="menu-friends-add" 
+							class="btn-floating btn-large green waves-effect waves-light scale-transition scale-out">
 							<i class="large material-icons">add</i>
 						</div>
 					</div>
 				</div>
 
-				<div id="main-chat" class="col s12 m9 hide-on-small-only h-4 z-depth-1"></div>
+				<div id="main-chat" class="col s12 m9 hide-on-small-only h-4"></div>
 			</div>
 		`);
 
@@ -42,8 +50,13 @@ export class main {
 			$('#app').html(this.app).fadeIn(() => {
 				this.beforeEvents();
 				this.afterEvents();
-				chatapp.socket.emit('action', 'rooms');
-				chatapp.socket.emit('action', 'friends');
+				chatapp.socket.emit('action', 'rooms', {
+					type: 'get'
+				}, (data) => this.roomsAdd(data.rooms));
+
+				chatapp.socket.emit('action', 'friends', {
+					type: 'get'
+				}, (data) => this.friendsAdd(data.friends));
 			});
 		});
 	}
@@ -66,57 +79,29 @@ export class main {
 			} else $('#main-menu').slideDown();
 		});
 
-		chatapp.socket.on('room-add', (room) => {
-			$('#rooms-progress').slideUp();
-			$('#room-'+ room.id).remove();
-
-			let elem = $(`
-				<div class="room waves-effect z-depth-1" id="room-`+ room.id +`" data-id="`+ room.id +`">
-					<span>`+ room.name +`</span>
-				</div>
-			`);	
-
-			$('#menu-rooms').append(elem);
+		chatapp.socket.on('rooms-add', (rooms) => this.roomsAdd(rooms));
+		chatapp.socket.on('rooms-remove', (rooms) => this.roomsRemove(rooms));
+		chatapp.socket.on('friends-request', (friend) => {
+			this.friendsAdd([friend]);
+			chatapp.toast('blue lighten-3', 'people', friend.username + ' send you a friend request') ;
 		});
-
-		chatapp.socket.on('friend-add', (friend) => {
-			$('#friend-'+ friend.id).remove();
-
-			let elem = $(`
-				<div class="room waves-effect z-depth-1" id="friend-`+ friend.id +`">
-					<span>`+ friend.username +`</span>
-				</div>
-			`);
-
-			$('#menu-friends').append(elem);
-		});
-
-		chatapp.socket.on('message-add', (messages) => {
-			if(!messages) return;
-			let wrapper = $('#main-chat-msg');
-			let lastMsg = wrapper.find('*:last');
-			if(wrapper.children().length) if(lastMsg.offset().top - wrapper.offset().top + lastMsg.height() / 3*2 < wrapper.innerHeight()){
-				let i = 0, raw = wrapper.get()[0];
-				function f() {
-					raw.scrollTop = raw.scrollHeight;
-					if( i++ < 30 ) setTimeout( f, i * 5 );
-				}
-				f();
-			}
-			for (let i = 0; i < messages.length; i++) this.parseChat(messages[i]);
-		});
+		chatapp.socket.on('messages-add', (messages) => this.messageAdd(messages));
 	}
 
 	afterEvents() {
+		$('#logout').on('click', () => chatapp.socket.emit('action', 'logout', {}, (data) => {
+			if(data.success) chatapp.router.goTo('login');
+		}));
+
 		$('#main-menu').on('click', '#main-chats', (e) => {
 			$(e.target).parent().removeClass('moveRight').addClass('moveLeft');
-			$('#menu-friends-add, #menu-friends-add-mobile').addClass('scale-out');
+			$('#menu-friends-add').addClass('scale-out');
 			$('#menu-list').animate({
 				'margin-left': '0',  
 			});
 		}).on('click', '#main-users', (e) => {
 			$(e.target).parent().removeClass('moveLeft').addClass('moveRight')
-			$('#menu-friends-add, #menu-friends-add-mobile').removeClass('scale-out');
+			$('#menu-friends-add').removeClass('scale-out');
 			$('#menu-list').animate({
 				'margin-left': '-' + $('#menu-list').width()/2,  
 			});
@@ -124,10 +109,12 @@ export class main {
 
 		$('#menu-rooms').on('click', '.room', (e) => this.loadChat($(e.target).data('id'), $(e.target).find('span').text()));
 
-		$('#menu-friends-add, #menu-friends-add-mobile').on('click', (e) => this.addFriends());
+		$('#menu-friends-add').on('click', (e) => this.addFriendsPopup());
+
+		$('#friend-request').on('click', () => this.openPopup($('#friend-request-wrapper')));
 
 		$('#menu-list').on('touchstart', (e) => {
-			let width = $('#menu-list').width();
+			let width = $('#menu-list').width()*-1;
 			let startMargin = Math.abs($('#menu-list').css('margin-left').slice(0,-2))*-1;
 			let oldX = e.originalEvent.touches[0].clientX;
 			let newX;
@@ -139,7 +126,7 @@ export class main {
 				let newMargin = (newX + startMargin);
 
 				let res;
-				if(newMargin <= 0) if(newMargin <= width/2) res = (startMargin >= width/2*-1 ? newMargin : newMargin  - startMargin);
+				if(newMargin <= 0) if(newMargin >= width/2) res = (startMargin < 0 ? newMargin : newMargin - startMargin);
 				else res = width/2;
 				else res = 0;
 				$('#menu-list').css('margin-left', res + 'px');
@@ -147,28 +134,29 @@ export class main {
 
 			$(window).one('touchend', () => {
 				$(window).off();
-				let range = 20;
+				let range = 100;
 
-				if(newX > range || newX < range*-1) {
-					if(startMargin <= width/2*-1) {
+				if(newX === undefined) return;
+				if(startMargin < width/4) {
+					if(newX < range) {
+						$('#main-nav').removeClass('moveLeft').addClass('moveRight');
+						$('#menu-list').animate({
+							'margin-left': '-' + $('#menu-list').width()/2,  
+						});
+					} else {
 						$('#main-nav').removeClass('moveRight').addClass('moveLeft');
 						$('#menu-list').animate({
 							'margin-left': 0,  
 						});
-						$('#menu-friends-add, #menu-friends-add-mobile').addClass('scale-out');
-					} else {
-						$('#main-nav').removeClass('moveLeft').addClass('moveRight');
-						$('#menu-list').animate({
-							'margin-left': '-' + $('#menu-list').width()/2,  
-						});
-						$('#menu-friends-add, #menu-friends-add-mobile').removeClass('scale-out');
+						$('#menu-friends-add').addClass('scale-out');
 					}
 				} else {
-					if(startMargin <= width/2*-1) {
+					if(newX < range*-1) {
 						$('#main-nav').removeClass('moveLeft').addClass('moveRight');
 						$('#menu-list').animate({
 							'margin-left': '-' + $('#menu-list').width()/2,  
 						});
+						$('#menu-friends-add').removeClass('scale-out');
 					} else {
 						$('#main-nav').removeClass('moveRight').addClass('moveLeft');
 						$('#menu-list').animate({
@@ -180,39 +168,179 @@ export class main {
 		});
 	}
 
-	addFriends() {
+	roomsAdd(rooms) {
+		$('#rooms-progress').slideUp();
+		
+		for (var i = 0; i < rooms.length; i++) {
+
+			$('#room-'+ rooms[i].id).remove();
+
+			let elem = $(`
+				<div class="room waves-effect z-depth-1" id="room-`+ rooms[i].id +`" data-id="`+ rooms[i].id +`">
+					<span>`+ rooms[i].name +`</span>
+				</div>
+			`);	
+
+			$('#menu-rooms').append(elem);
+		}
+	}
+
+	roomsRemove(rooms) {
+		for (let i = 0; i < rooms.length; i++) $('#room-' + rooms[i].id).remove();
+	}
+
+	friendsAdd(friends) {
+			
+		for (let i = 0; i < friends.length; i++) {
+
+			if(friends[i].request) {
+
+				let elem = $(`
+					<div class="user grey lighten-3 z-depth-1">
+						<div class="center-align">`+ friends[i].username +`</div>
+						<div class="waves-effect waves-green center-align">
+							<i class="material-icons">check</i>
+							<span>Accept</span>
+						</div>
+						<div class="waves-effect waves-red center-align">
+							<i class="material-icons">cancel</i>
+							<span>Deny</span>
+						</div>
+					</div>
+				`);
+
+				$('#friend-request-list').append(elem)
+
+				let len = $('#friend-request-len').text();
+
+				$('#friend-request-len').text(++len);
+
+				$('#friend-request').slideDown();
+
+				continue;
+			}
+
+			$('#friend-'+ friends[i].id).remove();
+
+			let elem = $(`
+				<div class="friend waves-effect z-depth-1" id="friend-`+ friends[i].id +`">
+					<span>`+ friends[i].username +`</span>
+				</div>
+			`);
+
+			$('#menu-friends').append(elem);
+		}
+
+	}
+
+	messageAdd(messages) {
+		if(!messages) return;
+		let wrapper = $('#main-chat-msg');
+		let lastMsg = wrapper.find('*:last');
+		let raw = wrapper.get()[0];
+		for (let i = 0; i < messages.length; i++) this.parseChat(messages[i]);
+		if(lastMsg.offset().top - wrapper.offset().top + lastMsg.height() / 3*2 < wrapper.innerHeight()) raw.scrollTop = raw.scrollHeight;
+	}
+
+	addFriendsPopup() {
 
 		let ele = $(`
-			<div id="popup-wrapper" class="valign-wrapper" style="display:none;">
-				<div id="popup">
-					<div class="input-field col s6">
-						<input placeholder="Search for user..." id="search-friends" type="text">
+			<div id="search-wrapper" class="popup-wrapper valign-wrapper" style="display:none;">
+				<div id="search-popup" class="popup">
+					<div class="popup-top input-field col s6">
+						<input placeholder="Search for user..." id="search-users" type="text">
 					</div>
-					<div id="search-friends-results">
+					<div id="search-results">
 						
 					</div>
 				</div>
 			</div>
 		`);
 
-		ele.one('click', (e) => {
-			if(e.target.id !== 'popup-wrapper') return
+		ele.on('click', (e) => {
+			if(e.target.id !== 'search-wrapper') return
 			ele.fadeOut(() => ele.remove());
 		});
 
-		ele.find('#search-friends').on('change', (e) => {
+		ele.find('#search-users').on('change', (e) => {
 			if(e.target.value <= 3) return;
 			chatapp.socket.emit('action', 'search', {
+				type:  'users',
 				search: e.target.value
-			}).once('search-response', (users) => {
-				ele.find('#search-friends-results').html('');
-				for (let i = 0; i < users.length; i++) ele.find('#search-friends-results').append(`
-					<div class="user">`+ users[i] +`</div>
-				`);
+			}, (data) => {
+				console.log(data)
+
+				ele.find('#search-results').html('');
+				
+				let container = $('<div/>', {
+					class: 'user grey lighten-3 z-depth-1'
+				});
+
+				let name = (username) => $('<div/>', {
+					class: 'username center-align'
+				}).append(username);
+
+				let self = $('<div/>', {
+					class: 'center-align'
+				}).append('This is you!');
+
+				let request = $('<div/>', {
+					class: 'center-align'
+				}).append('Friend request send!');
+
+				let add = (friendId) => $('<div/>', {
+					class: 'waves-effect action center-align'
+				}).append('<span><i class="icon material-icons">add</i>Send friend request</span>').one('click', (e) => {
+
+					chatapp.socket.emit('action', 'friends', {
+						type:    'request',
+						friendId: friendId
+					}, (data) => {
+						if(data.success) $(e.target).closest('div').removeClass('waves-effect').text('Friend request send');
+						else console.error(data.error);
+					});
+				});
+
+				let remove = (friendId) => $('<div/>', {
+					class: 'waves-effect waves-red action center-align'	
+				}).append('<span><i class="icon material-icons">block</i>Unfriend</span>').one('click', (e) => {
+
+					chatapp.socket.emit('action', 'friends', {
+						type:    'remove',
+						friendId: friendId
+					}, (data) => {
+						if(data.success) $(e.target).closest('div').removeClass('waves-effect').text('Unfriended');
+						else console.error(data.error);
+					});
+				});
+
+				for (let i = 0; i < data.users.length; i++) {
+					let cont = container.clone();
+					let div = ele.find('#search-results').append(cont.append(name(data.users[i].username)));
+
+					if(data.users[i].friends) cont.append(remove(data.users[i].id).clone(true));
+					else if(data.users[i].self) cont.append(self);
+					else if(data.users[i].request) cont.append(request);
+					else cont.append(add(data.users[i].id).clone(true));
+				};
 			});
 		});
 
-		$('#app').append(ele.fadeIn());
+		$('#app').append(ele.fadeIn(() => {
+			$('#search-friends').focus();
+		}));
+	}
+
+	openPopup(ele) {
+
+		ele.fadeIn();
+
+		ele.on('click', (e) => {
+			if($(e.target).hasClass('popup-wrapper')) ele.fadeOut(() => {
+				ele.off('click');
+			});
+		});
+
 	}
 
 	parseChat(message) {
@@ -306,7 +434,7 @@ export class main {
 			$('#main-chat-input').on('submit', (e) => {
 				e.preventDefault();
 				let input = $(e.target).find('input');
-				if(input.val().length <= 120 && input.val().length) {
+				if(input.val().length <= 255 && input.val().length) {
 					chatapp.socket.emit('action', 'messages', {
 						type: 'send',
 						roomId: id,
@@ -319,9 +447,13 @@ export class main {
 			chatapp.socket.emit('action', 'messages', {
 				type: 'get',
 				roomId: id
-			}).once('message-add', () => {
+			}, (data) => {
 				$('#main-chat-input input').prop('disabled', false).prop('placeholder', 'Type a message...');
 				$('#chat-progress').slideUp();
+
+				console.log(data.messages);
+
+				for (var i = 0; i < data.messages.length; i++) this.parseChat(data.messages[i]);
 				$('#main-chat-msg').get()[0].scrollTop = 9999;
 			});
 		});
