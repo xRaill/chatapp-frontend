@@ -181,6 +181,11 @@ html, body {
 	cursor: pointer;
 }
 
+.popout-bottom {
+	position: fixed;
+	bottom: 0;
+}
+
 .userbar { display: flex; }
 
 .userbar > * {
