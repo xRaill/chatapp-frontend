@@ -29,7 +29,7 @@ export class main {
 							<div id="friend-request-wrapper" class="popup-wrapper valign-wrapper" style="display:none;">
 								<div id="friend-request-list" class="popup">
 									<div class="popup-top center">
-										<div class="popup-close waves-effect grey-text"><i class="material-icons">close</i></div>
+										<div class="popup-close grey-text hide-on-med-and-up"><i class="material-icons">close</i></div>
 										<h5>Friend request(s)</h5>
 									</div>
 								</div>
@@ -116,6 +116,19 @@ export class main {
 
 		$('#friend-request').on('click', () => this.openPopup($('#friend-request-wrapper')));
 
+		$('#main-chat').on('click', '#chat-list', () => {
+			$('#chat-list-users').html('<div id="chat-list-progress" class="progress"><div class="indeterminate"></div></div>');
+
+			chatapp.socket.emit('action', 'rooms', {
+				type: 'users-get',
+				roomId: this.currentRoomId
+			}, (data) => {
+				if(data.success) this.roomsUsersAdd(data.users, data.owner);
+			});
+
+			this.openPopup($('#chat-list-wrapper'))
+		});
+
 		$('#menu-list').on('touchstart', (e) => {
 			let width = $('#menu-list').width()*-1;
 			let startMargin = Math.abs($('#menu-list').css('margin-left').slice(0,-2))*-1;
@@ -192,14 +205,43 @@ export class main {
 		for (let i = 0; i < rooms.length; i++) $('#room-' + rooms[i].id).remove();
 	}
 
-	friendsAdd(friends) {
-			
+	roomsUsersAdd(users, owner = false) {
+		for (let i = 0; i < users.length; i++) {
+
+			$('#user-'+ users[i].id).remove();
+
+			let removable = owner ? true : users[i].id == chatapp.userid ? true : false; 
+			let prepend = users[i].id == chatapp.userid;
+			let text = users[i].id == chatapp.userid ?  owner ? 'Destroy Room' : 'Leave Room' : 'Remove';
+
+			let elem = $(`
+				<div class="userbar z-depth-1" id="user-`+ users[i].id +`">
+					<div class="center-align">`+ users[i].username +`</div>
+					<div class="center-align">
+						<span>`+ (users[i].owner ? 'Owner' : 'User') +`</span>
+					</div>
+					<div class="waves-effect waves-red center-align `+ (removable ? 'disabled' : '')  +`">
+						<i class="material-icons">cancel</i>
+						<span>`+ text +`</span>
+					</div>
+				</div>
+			`);
+
+			if(prepend) $('#chat-list-users').prepend(elem);
+			else $('#chat-list-users').append(elem);
+
+			$('#chat-list-progress').slideUp();
+		}
+
+	}
+
+	friendsAdd(friends) {		
 		for (let i = 0; i < friends.length; i++) {
 
 			if(friends[i].request) {
 
 				let elem = $(`
-					<div class="user grey lighten-3 z-depth-1">
+					<div class="userbar grey lighten-3 z-depth-1">
 						<div class="center-align">`+ friends[i].username +`</div>
 						<div class="waves-effect waves-green center-align">
 							<i class="material-icons">check</i>
@@ -233,7 +275,6 @@ export class main {
 
 			$('#menu-friends').append(elem);
 		}
-
 	}
 
 	messageAdd(messages) {
@@ -339,7 +380,7 @@ export class main {
 		ele.fadeIn();
 
 		ele.on('click', (e) => {
-			if($(e.target).hasClass('popup-wrapper')) ele.fadeOut(() => {
+			if($(e.target).hasClass('popup-wrapper') || $(e.target).hasClass('popup-close')) ele.fadeOut(() => {
 				ele.off('click');
 			});
 		});
@@ -391,13 +432,25 @@ export class main {
 	loadChat(id, name) {
 		let chat = $(`
 			<div id="main-chat-bar" class="row blue lighten-2">
-				<div id="main-chat-back" class="col s2 waves-effect waves-light center">
+				<div id="main-chat-back" class="col s2 waves-effect center">
 					<i class="material-icons hide-on-med-and-up">arrow_back</i>
 				</div>
 				<div class="col s8 center">
 					<span>`+ name +`</span>
 				</div>
-				<div class="col s2 center">???</div>
+				<div id="chat-list" class="col s2 waves-effect center">
+					<i class="material-icons">userlist</i>
+				</div>
+				<div id="chat-list-wrapper" class="popup-wrapper valign-wrapper" style="display:none;">
+					<div class="popup">
+						<div class="popup-top">
+							<div class="popup-close grey-text hide-on-med-and-up"><i class="popup-close material-icons">close</i></div>
+							<div class="btn left">Add user</div>
+							<h5 class="center">User list</h5> 
+						</div>
+						<div id="chat-list-users"></div>
+					</div>
+				</div>
 			</div>
 			
 			<div id="chat-progress" class="progress">
@@ -420,6 +473,8 @@ export class main {
 			$('#main-menu').slideUp();
 			$('#main-chat').removeClass('hide-on-small-only');
 		}
+
+		this.currentRoomId = id;
 
 		$('#main-chat').fadeOut(() => {
 			$('#main-chat').html(chat).fadeIn();
