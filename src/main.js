@@ -317,7 +317,7 @@ export class main {
 				ele.find('#search-results').html('');
 				
 				let container = $('<div/>', {
-					class: 'user grey lighten-3 z-depth-1'
+					class: 'userbar grey lighten-3 z-depth-1'
 				});
 
 				let name = (username) => $('<div/>', {
