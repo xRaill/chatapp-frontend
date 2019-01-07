@@ -90,7 +90,10 @@ export class main {
 
 	afterEvents() {
 		$('#logout').on('click', () => chatapp.socket.emit('action', 'logout', {}, (data) => {
-			if(data.success) chatapp.router.goTo('login');
+			if(data.success) {
+				chatapp.router.goTo('login');
+				delete chatapp.main;
+			}
 		}));
 
 		$('#main-menu').on('click', '#main-chats', (e) => {
