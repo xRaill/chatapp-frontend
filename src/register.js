@@ -102,7 +102,8 @@ export class register {
 					passrpt:  passrpt
 				}, (data) => {
 					if(data.success) {
-						chatapp.toast('green', 'check', 'Registration complete.');
+						chatapp.toast('green', 'check', 'Registration complete');
+						router.goTo('login');
 					} else {
 						$('#login-form input').prop('disabled', false);
 						$('#login-submit').removeClass(['pulse', 'green']);

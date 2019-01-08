@@ -86,8 +86,8 @@ export class login {
 					password: password
 				}, (data) => {
 					if(data.success) {
-						chatapp.username = data.username;
-						chatapp.userid = data.userid;
+						localStorage.setItem('username', data.username);
+						localStorage.setItem('userId', data.userId);
 						localStorage.setItem('authToken', data.token);
 						chatapp.router.goTo('main');
 					} else {

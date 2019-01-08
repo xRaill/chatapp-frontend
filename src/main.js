@@ -10,7 +10,7 @@ export class main {
 
 					<div id="main-top" class="h-1 blue lighten-2 z-depth-1">
 						<div id="logout" class="waves-effect right"><i class="material-icons">logout</i></div>
-						<div id="main-user"> `+ chatapp.username +` </div>
+						<div id="main-user"> `+ localStorage.getItem('username') +` </div>
 						<div id="main-nav" class="auto-margin moveLeft">
 							<i id="main-chats" class="material-icons waves-effect center">chat</i>
 							<i id="main-users" class="material-icons waves-effect center">people</i>
@@ -92,6 +92,9 @@ export class main {
 		$('#logout').on('click', () => chatapp.socket.emit('action', 'logout', {}, (data) => {
 			if(data.success) {
 				chatapp.router.goTo('login');
+				localStorage.removeItem('authToken');
+				localStorage.removeItem('userId');
+				localStorage.removeItem('username');
 				delete chatapp.main;
 			}
 		}));
@@ -210,9 +213,10 @@ export class main {
 
 			$('#user-'+ users[i].id).remove();
 
-			let removable = owner ? true : users[i].id == chatapp.userid ? true : false; 
-			let prepend = users[i].id == chatapp.userid;
-			let text = users[i].id == chatapp.userid ?  owner ? 'Destroy Room' : 'Leave Room' : 'Remove';
+			let userId = localStorage.getItem('userId');
+			let removable = owner ? true : users[i].id == userId ? true : false; 
+			let prepend = users[i].id == userId;
+			let text = users[i].id == userId ?  owner ? 'Destroy Room' : 'Leave Room' : 'Remove';
 
 			let elem = $(`
 				<div class="userbar z-depth-1" id="user-`+ users[i].id +`">
@@ -388,7 +392,7 @@ export class main {
 	}
 
 	parseChat(message) {
-		let side = message.userId == chatapp.userid ? 'right' : 'left';
+		let side = message.userId == localStorage.getItem('userId') ? 'right' : 'left';
 		let user = side == 'right' ? 'You' : message.username;
 		let time = new Date(message.createdAt).toLocaleString().slice(10, -3);
 		let date = new Date(message.createdAt).toLocaleDateString();

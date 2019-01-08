@@ -31,8 +31,8 @@ class CHATAPP {
 			token: localStorage.getItem('authToken')
 		}, (data) => {
 			if(data.success) {
-				this.userid   = data.userId;
-				this.username = data.username;
+				localStorage.setItem('userId', data.userId);
+				localStorage.setItem('username', data.username);
 				this.router.goTo('main');
 			} else this.router.goTo('login');
 		});
