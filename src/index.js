@@ -10,7 +10,7 @@ require('materialize-loader');
 
 require('./index.html');
 
-class CHATAPP {
+class chatapp {
 
 	constructor() {
 
@@ -74,21 +74,16 @@ class CHATAPP {
 	}
 
 	getClass(name, callback) {
-		let self = this;
+		let page = require('./'+ name +'.js');
 
-		let test = require('./'+ name +'.js');
-		
-		self[name] = new test[name]
-		// self[name] = new
-		// .then(cls => {
-		// 	console.log(cls)
-		// 	if(typeof callback == "function") callback(self[name]);
-		// });
+		this[name] = new page[name];
 	}
 
-	action(type, args) {
-		this.socket.emit('action', type, args);
+	getPopup(name, data) {
+		let popup = require('./popup/'+ name +'.js');
+
+		this['popup-'+ name] = new popup[name];
 	}
 }
 
-$(window).ready(() => window.chatapp = new CHATAPP);
+$(window).ready(() => window.chatapp = new chatapp);

@@ -1,12 +1,13 @@
 const webpack = require('webpack');
 const path = require('path');
+const glob = require('glob');
 
 module.exports = {
 	mode: 'development',
 	context: path.join(__dirname, 'src'),
 	entry: {
 		index: ['./index.html', './index.js', './style.css'],
-		another: ['./login.js', './register.js', './main.js', './router.js']
+		another: ['./login.js', './register.js', './main.js', './router.js'].concat(glob.sync('./popup/*.js'))
 	},
 	output: {
 		filename: '[name].js',
