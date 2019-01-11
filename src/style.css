@@ -97,6 +97,11 @@ html, body {
 	  to { margin-left:   -100%; }
 }
 
+.menu-progress {
+	margin: 0;
+	height: .5em;
+}
+
 #rooms-progress { margin:0; }
 
 .room, .friend {
@@ -109,14 +114,7 @@ html, body {
 
 .room:nth-child(odd), .friend:nth-child(odd) { background: #eee !important; }
 
-#friend-request { width: 100%; }
-
-#friend-request-list .user { display: flex; }
-
-#friend-request-list .user > * {
-	width: 100%;
-	padding: 1em
-}
+#friend-requests { width: 100%; }
 
 #menu-friends-add {
 	position: fixed;

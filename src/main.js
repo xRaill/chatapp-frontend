@@ -21,20 +21,9 @@ export class main {
 						<div class="indeterminate"></div>
 					</div>
 
-					<div id="menu-list" class=>
+					<div id="menu-list">
 						<div id="menu-rooms"></div>
-						<div id="menu-friends">
-							<div id="friend-request" class="teal waves-effect z-depth-1 center-align" style="display:none;">
-							<span id="friend-request-len">0</span> Friend request(s)</div>
-							<div id="friend-request-wrapper" class="popup-wrapper valign-wrapper" style="display:none;">
-								<div id="friend-request-list" class="popup">
-									<div class="popup-top center">
-										<div class="popup-close grey-text hide-on-med-and-up"><i class="material-icons">close</i></div>
-										<h5>Friend request(s)</h5>
-									</div>
-								</div>
-							</div>
-						</div>
+						<div id="menu-friends"></div>
 						<div id="menu-friends-add" 
 							class="btn-floating btn-large green waves-effect waves-light scale-transition scale-out">
 							<i class="large material-icons">add</i>
@@ -54,9 +43,7 @@ export class main {
 					type: 'get'
 				}, (data) => this.roomsAdd(data.rooms));
 
-				chatapp.socket.emit('action', 'friends', {
-					type: 'get'
-				}, (data) => this.friendsAdd(data.friends));
+				this.loadFriends();
 			});
 		});
 	}
@@ -81,10 +68,12 @@ export class main {
 
 		chatapp.socket.on('rooms-add', (rooms) => this.roomsAdd(rooms));
 		chatapp.socket.on('rooms-remove', (rooms) => this.roomsRemove(rooms));
+
 		chatapp.socket.on('friends-request', (friend) => {
-			this.friendsAdd([friend]);
 			chatapp.toast('blue lighten-3', 'people', friend.username + ' send you a friend request') ;
+			this.loadFriends();
 		});
+		
 		chatapp.socket.on('messages-add', (messages) => this.messageAdd(messages));
 	}
 
@@ -116,8 +105,6 @@ export class main {
 		$('#menu-rooms').on('click', '.room', (e) => this.loadChat($(e.target).data('id'), $(e.target).find('span').text()));
 
 		$('#menu-friends-add').on('click', (e) => this.addFriendsPopup());
-
-		$('#friend-request').on('click', () => this.openPopup($('#friend-request-wrapper')));
 
 		$('#main-chat').on('click', '#chat-list', () => {
 			$('#chat-list-users').html('<div id="chat-list-progress" class="progress"><div class="indeterminate"></div></div>');
@@ -239,46 +226,39 @@ export class main {
 
 	}
 
-	friendsAdd(friends) {		
-		for (let i = 0; i < friends.length; i++) {
+	loadFriends() {
+		$('#menu-friends').html($(`
+			<div class="progress menu-progress">
+				<div class="indeterminate"></div>
+			</div>
+		`));
 
-			if(friends[i].request) {
+		chatapp.socket.emit('action', 'friends', {
+			type: 'get'
+		}, (data) => {
 
-				let elem = $(`
-					<div class="userbar grey lighten-3 z-depth-1">
-						<div class="center-align">`+ friends[i].username +`</div>
-						<div class="waves-effect waves-green center-align">
-							<i class="material-icons">check</i>
-							<span>Accept</span>
-						</div>
-						<div class="waves-effect waves-red center-align">
-							<i class="material-icons">cancel</i>
-							<span>Deny</span>
-						</div>
+			if(data.success) {
+
+				$('#menu-friends').append($(`
+					<div id="friend-requests" class="teal waves-effect z-depth-1 center-align" style="display:none;">
+						<span id="friend-request-len">`+ data.requests +`</span> 
+						Friend request(s)
 					</div>
-				`);
+				`));
 
-				$('#friend-request-list').append(elem)
+				$('#friend-requests').on('click', () => chatapp.getPopup('friendRequests'));
 
-				let len = $('#friend-request-len').text();
+				if(data.requests) $('#friend-requests').slideDown();
 
-				$('#friend-request-len').text(++len);
+				for (let i = 0; i < data.friends.length; i++) $('#menu-friends').append($(`
+					<div class="friend waves-effect z-depth-1" id="friend-`+ data.friends[i].id +`">
+						<span>`+ data.friends[i].username +`</span>
+					</div>
+				`));
 
-				$('#friend-request').slideDown();
-
-				continue;
+				$('#menu-friends .progress').slideUp();
 			}
-
-			$('#friend-'+ friends[i].id).remove();
-
-			let elem = $(`
-				<div class="friend waves-effect z-depth-1" id="friend-`+ friends[i].id +`">
-					<span>`+ friends[i].username +`</span>
-				</div>
-			`);
-
-			$('#menu-friends').append(elem);
-		}
+		});
 	}
 
 	messageAdd(messages) {

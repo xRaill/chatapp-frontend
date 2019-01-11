@@ -24,7 +24,7 @@ class chatapp {
 		});
 	}
 
-	connected() {		
+	connected() {
 		console.log('connected');
 
 		this.socket.emit('action', 'authenticate', {
