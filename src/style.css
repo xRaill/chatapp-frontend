@@ -195,12 +195,7 @@ html, body {
 	line-height: 50px;
 }
 
-#search-results .action { line-height: 70px; }
-
-#search-results .icon {
-	position: absolute;
-	left: 46%;
-} 
+.userbar .waves-effect:hover { background: #bdbdbd; }
 
 /*   CHAT */
 

@@ -73,7 +73,7 @@ export class main {
 			chatapp.toast('blue lighten-3', 'people', friend.username + ' send you a friend request') ;
 			this.loadFriends();
 		});
-		
+
 		chatapp.socket.on('messages-add', (messages) => this.messageAdd(messages));
 	}
 
@@ -104,7 +104,7 @@ export class main {
 
 		$('#menu-rooms').on('click', '.room', (e) => this.loadChat($(e.target).data('id'), $(e.target).find('span').text()));
 
-		$('#menu-friends-add').on('click', (e) => this.addFriendsPopup());
+		$('#menu-friends-add').on('click', (e) => chatapp.getPopup('addFriends'));
 
 		$('#main-chat').on('click', '#chat-list', () => {
 			$('#chat-list-users').html('<div id="chat-list-progress" class="progress"><div class="indeterminate"></div></div>');
