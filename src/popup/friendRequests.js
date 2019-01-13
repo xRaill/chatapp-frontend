@@ -3,9 +3,12 @@ let popup = new require('./popup.js').popup;
 export class friendRequests {
 
 	constructor() {
-		this.popup = new popup('friendRequests');
+		this.popup = new popup({
+			id:    'friendRequests',
+			title: 'Friend Requests'
+		});
 
-		let spinner = $(`
+		$(this.popup.body).html($(`
 			<div class="valign-wrapper h-4">
 				<div class="preloader-wrapper big active center-block">
 					<div class="spinner-layer spinner-blue-only">
@@ -19,14 +22,7 @@ export class friendRequests {
 					</div>
 				</div>
 			</div>
-		`);
-
-		this.popup.update({
-			title: 'Friend Requests',
-			body: spinner
-		});
-
-		this.popup.show();
+		`));
 
 		this.load();
 	}
@@ -41,9 +37,13 @@ export class friendRequests {
 
 	display(friends) {
 
-		if(!friends.length) this.popup.update('body', 'You have no friend requests');
+		if(!friends.length) return $(this.popup.body).html(`
+			<div class="valign-wrapper h-3">
+				<span class="center-block">You have no friend requests</span>
+			</div>
+		`);
 
-		let results = $('<div/>');
+		let results = [];
 
 		for (let i = 0; i < friends.length; i++) {
 
@@ -70,7 +70,7 @@ export class friendRequests {
 					chatapp.main.loadFriends();
 					$(e.target).closest('.userbar').slideUp(() => {
 						$(e.target).closest('.userbar').remove();
-						if(!$('#'+ this.popup.id).find('.userbar').length) this.popup.destroy();
+						if(!$(this.popup.dom).find('.userbar').length) this.popup.destroy();
 					});
 				}
 			}));
@@ -83,15 +83,15 @@ export class friendRequests {
 					chatapp.main.loadFriends();
 					$(e.target).closest('.userbar').slideUp(() => {
 						$(e.target).closest('.userbar').remove();
-						if(!$('#'+ this.popup.id).find('.userbar').length) this.popup.destroy();
+						if(!$(this.popup.dom).find('.userbar').length) this.popup.destroy();
 					});
 				}
 			}));
 
-			results.append(elem);
+			results.push(elem);
 		}
 
-		return this.popup.update('body', results);
+		$(this.popup.body).html(results);
 	}
 
 }
