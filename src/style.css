@@ -147,11 +147,22 @@ html, body {
 
 .popup {
 	background: #eee;
-	width: 50%;
-	height: 95%;
 	border-radius: 5px;
 	padding: 0 1em;
-	margin: 0 auto;	padding-bottom: 3em;
+	margin: 0 auto;
+	padding-bottom: 3em;
+}
+
+.popup-md {
+	height: 95%;
+	width: 50%;
+}
+
+.popup-sm {
+	height: 25%;
+	width: 30%;
+	min-height: 10em;
+	min-width: 30em;
 }
 
 .popup-top {
@@ -163,12 +174,12 @@ html, body {
 	position: fixed;
 	padding: 0 .2em;
 	cursor: pointer;
-	transform: translateX(21vw);
+	transform: translateX(40vw);
 }
 
 .popup-body {
 	overflow-y: auto;
-	height: 90%;
+	height: 80%;
 }
 
 .popout-bottom {
@@ -179,12 +190,19 @@ html, body {
 @media only screen and (max-width: 600px) {
 	.popup-wrapper { padding: 5vh; }
 
-	.popup {
+	.popup-md {
 		height: 100%;
 		width:  95%;
 	}
 
-	.popup-close { transform: translateX(30vw); }
+	.popup-sm {
+		height: 30%;
+		width: 90%;
+		min-height: unset;
+		min-width: unset;
+	}
+
+	.popup-close { transform: translateX(60vw); }
 }
 
 .userbar { display: flex; }

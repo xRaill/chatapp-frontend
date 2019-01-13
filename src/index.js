@@ -82,7 +82,7 @@ class chatapp {
 	getPopup(name, data) {
 		let popup = require('./popup/'+ name +'.js');
 
-		this['popup'+ name.charAt(0).toUpperCase() + name.slice(1)] = new popup[name];
+		this['popup'+ name.charAt(0).toUpperCase() + name.slice(1)] = new (popup[name])(data);
 	}
 }
 

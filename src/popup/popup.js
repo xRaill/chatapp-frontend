@@ -1,55 +1,48 @@
 export class popup {
 
-	constructor(name) {
-		if(!name) return console.error('[POPUP] Called without a name');
-		this.name = name;
-		this.id = 'popup'+ name.charAt(0).toUpperCase() + name.slice(1);
+	constructor(args = {}) {
+		if(!args.id) return console.error('[POPUP] Called without an id');
+		
+		this.id      = 'popup'+ args.id.charAt(0).toUpperCase() + args.id.slice(1);
+		this.dom     = '#' + this.id;
+		this.title   = this.dom + '-title';
+		this.body    = this.dom + '-body';
+		this.buttons = this.dom + '-buttons';
 
-		this.content = $(`
+		$('body').append($(`
 			<div id="`+ this.id +`" class="popup-wrapper valign-wrapper" style="display:none;">
-				<div class="popup z-depth-5">
+				<div class="popup popup-`+ (args.size ? args.size : 'md') +` z-depth-5">
 					<div class="popup-top">
-						<div class="popup-close grey-text"><i class="popup-close material-icons waves-effect">close</i></div>
-						<h5 id="`+ this.id +`-title" class="center"></h5> 
+						<div class="popup-close grey-text"`+ (args.closable === false ? ' style="display:none;"' : '') +`>
+							<i class="material-icons waves-effect">close</i>
+						</div>
+						<h5 id="`+ this.id +`-title" class="center">`+ args.title +`</h5> 
 					</div>
 					<div id="`+ this.id +`-body" class="popup-body"></div>
+					<div id="`+ this.id +`-buttons"></div>
 				</div>
 			</div>
-		`);
+		`));
 
-		this.content.on('click', (e) => {
+		if(args.closable !== false) $(this.dom).on('click', (e) => {
 			if($(e.target).hasClass('popup-wrapper')) return this.destroy();
 			if($(e.target).parentsUntil('.popup-wrapper', '.popup-close').length) return this.destroy();
 		});
 
-		$('#'+ this.id).remove();
-		$('body').append(this.content);
-	}
-
-	update(a, b) {
-		let content = {
-			title: (val) => $('#'+ this.id + '-title').text(val),
-			body:  (val) => $('#'+ this.id + '-body').html(val)
-		}
-
-		if(typeof a === 'string') content[a](b);
-		else {
-			if(a.title) content.title(a.title);
-			if(a.body)  content.body(a.body);
-		}
+		if(!args.hidden) this.show();
 	}
 
 	show() {
-		this.content.fadeIn();
+		$(this.dom).fadeIn();
 	}
 
 	hide() {
-		this.content.fadeOut();
+		$(this.dom).fadeOut();
 	}
 
 	destroy() {
-		this.content.fadeOut(() => {
-			$('#'+ this.id).remove();
+		$(this.dom).fadeOut(() => {
+			$(this.dom).remove();
 			delete chatapp[this.id];
 		});
 	}
