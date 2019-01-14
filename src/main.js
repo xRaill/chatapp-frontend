@@ -26,7 +26,7 @@ export class main {
 						<div id="menu-friends"></div>
 						<div id="menu-friends-add" 
 							class="btn-floating btn-large green waves-effect waves-light scale-transition scale-out">
-							<i class="large material-icons">add</i>
+							<i class="large material-icons">search</i>
 						</div>
 					</div>
 				</div>
