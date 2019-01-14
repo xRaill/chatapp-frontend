@@ -17,10 +17,6 @@ export class main {
 						</div>
 					</div>
 
-					<div id="rooms-progress" class="progress">
-						<div class="indeterminate"></div>
-					</div>
-
 					<div id="menu-list">
 						<div id="menu-rooms"></div>
 						<div id="menu-friends"></div>
@@ -39,10 +35,8 @@ export class main {
 			$('#app').html(this.app).fadeIn(() => {
 				this.beforeEvents();
 				this.afterEvents();
-				chatapp.socket.emit('action', 'rooms', {
-					type: 'get'
-				}, (data) => this.roomsAdd(data.rooms));
 
+				this.loadRooms();
 				this.loadFriends();
 			});
 		});
@@ -66,8 +60,7 @@ export class main {
 			} else $('#main-menu').slideDown();
 		});
 
-		chatapp.socket.on('rooms-add', (rooms) => this.roomsAdd(rooms));
-		chatapp.socket.on('rooms-remove', (rooms) => this.roomsRemove(rooms));
+		chatapp.socket.on('rooms-reload', () => this.roomsLoad());
 
 		chatapp.socket.on('friends-request', (friend) => {
 			chatapp.toast('blue lighten-3', 'people', friend.username + ' send you a friend request') ;
@@ -101,8 +94,6 @@ export class main {
 				'margin-left': '-' + $('#menu-list').width()/2,  
 			});
 		});
-
-		$('#menu-rooms').on('click', '.room', (e) => this.loadChat($(e.target).data('id'), $(e.target).find('span').text()));
 
 		$('#menu-friends-add').on('click', (e) => chatapp.getPopup('addFriends'));
 
@@ -161,25 +152,34 @@ export class main {
 		});
 	}
 
-	roomsAdd(rooms) {
-		$('#rooms-progress').slideUp();
-		
-		for (var i = 0; i < rooms.length; i++) {
+	loadRooms() {
+		$('#menu-rooms').html($(`
+			<div class="progress menu-progress">
+				<div class="indeterminate"></div>
+			</div>
+		`));
 
-			$('#room-'+ rooms[i].id).remove();
+		chatapp.socket.emit('action', 'rooms', {
+			type: 'get'
+		}, (data) => {
+			if(data.success) {
 
-			let elem = $(`
-				<div class="room waves-effect z-depth-1" id="room-`+ rooms[i].id +`" data-id="`+ rooms[i].id +`">
-					<span>`+ rooms[i].name +`</span>
-				</div>
-			`);	
+				for (let i = 0; i < data.rooms.length; i++) {
 
-			$('#menu-rooms').append(elem);
-		}
-	}
+					let elem = $(`
+						<div class="room waves-effect z-depth-1" id="room-`+ data.rooms[i].id +`">
+							<span>`+ data.rooms[i].name +`</span>
+						</div>
+					`);
 
-	roomsRemove(rooms) {
-		for (let i = 0; i < rooms.length; i++) $('#room-' + rooms[i].id).remove();
+					$(elem).on('click', (e) => this.loadChat(data.rooms[i].id, data.rooms[i].name));
+
+					$('#menu-rooms').append(elem);
+				}
+
+				$('#menu-rooms .progress').slideUp();
+			}
+		});
 	}
 
 	loadFriends() {
