@@ -106,19 +106,6 @@ export class main {
 
 		$('#menu-friends-add').on('click', (e) => chatapp.getPopup('addFriends'));
 
-		$('#main-chat').on('click', '#chat-list', () => {
-			$('#chat-list-users').html('<div id="chat-list-progress" class="progress"><div class="indeterminate"></div></div>');
-
-			chatapp.socket.emit('action', 'rooms', {
-				type: 'users-get',
-				roomId: this.currentRoomId
-			}, (data) => {
-				if(data.success) this.roomsUsersAdd(data.users, data.owner);
-			});
-
-			this.openPopup($('#chat-list-wrapper'))
-		});
-
 		$('#menu-list').on('touchstart', (e) => {
 			let width = $('#menu-list').width()*-1;
 			let startMargin = Math.abs($('#menu-list').css('margin-left').slice(0,-2))*-1;
@@ -195,37 +182,6 @@ export class main {
 		for (let i = 0; i < rooms.length; i++) $('#room-' + rooms[i].id).remove();
 	}
 
-	roomsUsersAdd(users, owner = false) {
-		for (let i = 0; i < users.length; i++) {
-
-			$('#user-'+ users[i].id).remove();
-
-			let userId = localStorage.getItem('userId');
-			let removable = owner ? true : users[i].id == userId ? true : false; 
-			let prepend = users[i].id == userId;
-			let text = users[i].id == userId ?  owner ? 'Destroy Room' : 'Leave Room' : 'Remove';
-
-			let elem = $(`
-				<div class="userbar z-depth-1" id="user-`+ users[i].id +`">
-					<div class="center-align">`+ users[i].username +`</div>
-					<div class="center-align">
-						<span>`+ (users[i].owner ? 'Owner' : 'User') +`</span>
-					</div>
-					<div class="waves-effect waves-red center-align `+ (removable ? 'disabled' : '')  +`">
-						<i class="material-icons">cancel</i>
-						<span>`+ text +`</span>
-					</div>
-				</div>
-			`);
-
-			if(prepend) $('#chat-list-users').prepend(elem);
-			else $('#chat-list-users').append(elem);
-
-			$('#chat-list-progress').slideUp();
-		}
-
-	}
-
 	loadFriends() {
 		$('#menu-friends').html($(`
 			<div class="progress menu-progress">
@@ -268,18 +224,6 @@ export class main {
 		let raw = wrapper.get()[0];
 		for (let i = 0; i < messages.length; i++) this.parseChat(messages[i]);
 		if(lastMsg.offset().top - wrapper.offset().top + lastMsg.height() / 3*2 < wrapper.innerHeight()) raw.scrollTop = raw.scrollHeight;
-	}
-
-	openPopup(ele) {
-
-		ele.fadeIn();
-
-		ele.on('click', (e) => {
-			if($(e.target).hasClass('popup-wrapper') || $(e.target).hasClass('popup-close')) ele.fadeOut(() => {
-				ele.off('click');
-			});
-		});
-
 	}
 
 	parseChat(message) {
@@ -336,16 +280,6 @@ export class main {
 				<div id="chat-list" class="col s2 waves-effect center">
 					<i class="material-icons">userlist</i>
 				</div>
-				<div id="chat-list-wrapper" class="popup-wrapper valign-wrapper" style="display:none;">
-					<div class="popup">
-						<div class="popup-top">
-							<div class="popup-close grey-text hide-on-med-and-up"><i class="popup-close material-icons">close</i></div>
-							<div class="btn left">Add user</div>
-							<h5 class="center">User list</h5> 
-						</div>
-						<div id="chat-list-users"></div>
-					</div>
-				</div>
 			</div>
 			
 			<div id="chat-progress" class="progress">
@@ -378,6 +312,8 @@ export class main {
 			// $('#main-chat-input input').characterCounter();
 
 			$('#main-chat-msg').on('wheel', (e) => { if(self.scrollLock) return e.preventDefault() });
+
+			$('#chat-list').on('click', () => chatapp.getPopup('roomUserList', { roomId: id }));
 
 			$('#main-chat-back').on('click', (e) => {
 				$('#main-menu').slideDown();

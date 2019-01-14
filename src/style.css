@@ -215,6 +215,16 @@ html, body {
 
 .userbar .waves-effect:hover { background: #bdbdbd; }
 
+.userbar .disabled {
+	pointer-events: none;
+	color: grey;
+}
+
+.userbar .material-icons {
+	height: 24px;
+	width: 24px;
+}
+
 /*   CHAT */
 
 #main-chat { height: 100%; }
