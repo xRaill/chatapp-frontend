@@ -114,21 +114,44 @@ html, body {
 
 .room:nth-child(odd), .friend:nth-child(odd) { background: #eee !important; }
 
+.room { height: 80px; }
+
+.friend { height: 45px; }
+
 #friend-requests { width: 100%; }
+
+.friend-options > * {
+	background: #eee;
+	padding: 0.5em;
+	width: 100%;
+	z-index: 999;
+}
+
+.friend-options > .action:last-child { border-radius: 0 0 35px 35px; }
+.friend-options > .action:hover { background: grey; }
+.darken-bg {
+	background: rgba(0, 0, 0, 0.3);
+	position: fixed;
+	height: 100vh;
+	width: 100vw;
+	left: 0;
+	top: 0;
+	z-index: 998;
+	transition: background 1s;
+}
 
 #menu-friends-add {
 	position: fixed;
 	width: 56px;
 	left: 20%;
 	bottom: 1%;
-	z-index: 998;
+	z-index: 997;
 }
 
 @media only screen and (max-width: 600px) {
 	#menu-friends-add {
 		left: 80%;
 		bottom: 2%;
-		z-index: 998;
 	}
 }
 

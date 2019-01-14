@@ -206,11 +206,61 @@ export class main {
 
 				if(data.requests) $('#friend-requests').slideDown();
 
-				for (let i = 0; i < data.friends.length; i++) $('#menu-friends').append($(`
-					<div class="friend waves-effect z-depth-1" id="friend-`+ data.friends[i].id +`">
-						<span>`+ data.friends[i].username +`</span>
-					</div>
-				`));
+				for (let i = 0; i < data.friends.length; i++) {
+					
+					let elem = $(`
+						<div class="friend waves-effect z-depth-1" id="friend-`+ data.friends[i].id +`">
+							<span>`+ data.friends[i].username +`</span>
+						</div>
+					`);
+
+					$(elem).on('click', (e) => {
+						if(!elem.hasClass('open')) {
+							
+							let options = $(`
+								<div class="friend-options" style="display:none;">
+									<div class="darken-bg" style="display:none"></div>
+									<div class="action add waves-effect waves-green center z-depth-1 hide">Add to current room</div>
+									<div class="action remove waves-effect waves-red center z-depth-1">Remove friend</div>
+								</div>
+							`);
+
+							$(options).find('.remove').on('click', () => chatapp.getPopup('confirm', {
+								title:   'Unfriend',
+								message: 'Are you sure you want to unfriend <b>'+ data.friends[i].username +'</b>?',
+								callback: (result) => {
+									if(result) chatapp.socket.emit('action', 'friends', {
+										type: 'remove',
+										friendId: data.friends[i].id
+									}, (data2) => {
+										if(data2) {
+											options.slideUp(() => {
+												options.remove();
+												elem.slideUp(() => elem.remove())
+											}).find('.darken-bg').fadeOut();
+											chatapp.toast('blue lighten-3', 'people',
+												'You removed <b>'+ data.friends[i].username +'</b> as your friend');
+										}
+									});
+								}
+							}));
+
+							$(options).find('.darken-bg').on('click', () => options.slideUp(() => {
+								elem.removeClass('open').css('z-index', 0);
+								options.remove();
+							}).find('.darken-bg').fadeOut());
+
+							elem.after(options);
+							options.slideDown().find('.darken-bg').fadeIn();
+							elem.addClass('open').css('z-index', 999);
+						} else $('.friend-options').slideUp(() => {
+							$('.friend-options').remove();
+							elem.removeClass('open').css('z-index', 0);
+						}).find('.darken-bg').fadeOut();
+					});
+
+					$('#menu-friends').append(elem);
+				}
 
 				$('#menu-friends .progress').slideUp();
 			}
