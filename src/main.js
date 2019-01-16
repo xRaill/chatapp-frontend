@@ -169,6 +169,7 @@ export class main {
 					let elem = $(`
 						<div class="room waves-effect z-depth-1" id="room-`+ data.rooms[i].id +`">
 							<span>`+ data.rooms[i].name +`</span>
+							<span class="last-msg">`+ (data.rooms[i].lastMsg ? data.rooms[i].lastMsg : '') +`</span>
 						</div>
 					`);
 

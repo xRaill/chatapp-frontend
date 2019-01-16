@@ -129,6 +129,7 @@ html, body {
 
 .friend-options > .action:last-child { border-radius: 0 0 35px 35px; }
 .friend-options > .action:hover { background: grey; }
+
 .darken-bg {
 	background: rgba(0, 0, 0, 0.3);
 	position: fixed;
@@ -138,6 +139,18 @@ html, body {
 	top: 0;
 	z-index: 998;
 	transition: background 1s;
+}
+
+.last-msg {
+	position: absolute;
+	bottom: 0;
+	left: 1em;
+	padding: 0 1em;
+	color: gray;
+	width: 90%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 #menu-friends-add {
