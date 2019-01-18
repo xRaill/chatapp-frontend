@@ -341,7 +341,7 @@ export class main {
 
 			<form id="main-chat-input" class="blue lighten-2 row chat-width">
 				<div id="main-input-wrapper" class="col s9 m10 input-field">
-					<input type="text" data-length="120" placeholder="Loading messages..." disabled>
+					<input type="text" data-length="255" placeholder="Loading messages..." disabled>
 				</div>
 				<div class="col s1 center">
 					<button id="main-chat-send" class="btn green waves-effect waves-light">Send</button>
@@ -359,8 +359,7 @@ export class main {
 		$('#main-chat').fadeOut(() => {
 			$('#main-chat').html(chat).fadeIn();
 
-			// Materialize js not working with webpack // add materialze js to config
-			// $('#main-chat-input input').characterCounter();
+			$('#main-chat-input input').characterCounter();
 
 			$('#main-chat-msg').on('wheel', (e) => { if(self.scrollLock) return e.preventDefault() });
 

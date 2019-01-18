@@ -1,14 +1,17 @@
 import _ from 'lodash';
- 
-const $ = require('jquery')
+
+const $ = require('jquery');
 const jQuery  = $;
 window.$      = $;
 window.jQuery = $;
 
-require('materialize-loader');
+require('../node_modules/materialize-css/dist/css/materialize.min.css');
+require('../node_modules/materialize-css/dist/js/materialize.min.js');
 
+// Needed for waves effect on buttons to work
+Waves.displayEffect();
 
-require('./index.html');
+import './index.html';
 
 class chatapp {
 
