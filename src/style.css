@@ -224,6 +224,7 @@ html, body {
 	width: 30%;
 	min-height: 10em;
 	min-width: 30em;
+	margin-top: -10%;
 }
 
 .popup-top {
@@ -256,6 +257,7 @@ html, body {
 	}
 
 	.popup-sm {
+		margin-top: -30%;
 		height: 30%;
 		width: 90%;
 		min-height: unset;
