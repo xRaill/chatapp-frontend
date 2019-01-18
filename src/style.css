@@ -249,11 +249,9 @@ html, body {
 }
 
 @media only screen and (max-width: 600px) {
-	.popup-wrapper { padding: 5vh; }
-
 	.popup-md {
-		height:  80%;
-		width:  100%;
+		height: 95%;
+		width:  95%;
 	}
 
 	.popup-sm {
@@ -263,7 +261,7 @@ html, body {
 		min-width: unset;
 	}
 
-	.popup-close { transform: translateX(60vw); }
+	.popup-close { transform: translateX(75vw); }
 }
 
 .userbar { display: flex; }
