@@ -252,8 +252,8 @@ html, body {
 	.popup-wrapper { padding: 5vh; }
 
 	.popup-md {
-		height: 100%;
-		width:  95%;
+		height:  80%;
+		width:  100%;
 	}
 
 	.popup-sm {
