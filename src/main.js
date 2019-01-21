@@ -221,8 +221,7 @@ export class main {
 							let options = $(`
 								<div class="friend-options" style="display:none;">
 									<div class="darken-bg" style="display:none"></div>
-									<div class="action add waves-effect waves-green center z-depth-1 hide">Add to current room</div>
-									<div class="action remove waves-effect waves-red center z-depth-1">Remove friend</div>
+									<div class="action remove waves-effect waves-red red-text center z-depth-1">Remove friend</div>
 								</div>
 							`);
 
@@ -237,7 +236,7 @@ export class main {
 										if(data2) {
 											options.slideUp(() => {
 												options.remove();
-												elem.slideUp(() => elem.remove())
+												elem.slideUp(() => elem.remove());
 											}).find('.darken-bg').fadeOut();
 											chatapp.toast('blue lighten-3', 'people',
 												'You removed <b>'+ data.friends[i].username +'</b> as your friend');
