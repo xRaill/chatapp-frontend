@@ -325,10 +325,13 @@ export class main {
 				<div id="main-chat-back" class="col s2 waves-effect center">
 					<i class="material-icons hide-on-med-and-up">arrow_back</i>
 				</div>
-				<div class="col s8 center">
+				<div class="col s6 m8 center">
 					<span id="chat-name">...</span>
 				</div>
-				<div id="chat-list" class="col s2 waves-effect center">
+				<div id="chat-add" class="col s2 m1 waves-effect center">
+					<i class="material-icons">add</i>
+				</div>
+				<div id="chat-list" class="col s2 m1 waves-effect center">
 					<i class="material-icons">userlist</i>
 				</div>
 			</div>
@@ -354,7 +357,7 @@ export class main {
 			$('#main-chat').removeClass('hide-on-small-only');
 		}
 
-		this.currentRoomId    = id;
+		this.currentRoomId = id;
 
 		$('#main-chat').fadeOut(() => {
 			$('#main-chat').html(chat).fadeIn();
@@ -364,6 +367,7 @@ export class main {
 			$('#main-chat-msg').on('wheel', (e) => { if(self.scrollLock) return e.preventDefault() });
 
 			$('#chat-list').on('click', () => chatapp.getPopup('roomUserList', { roomId: id }));
+			$('#chat-add').on('click', () => chatapp.getPopup('chatUserAdd', { roomId: id }));
 
 			$('#main-chat-back').on('click', (e) => {
 				$('#main-menu').slideDown();
