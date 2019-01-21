@@ -287,6 +287,11 @@ html, body {
 	width: 24px;
 }
 
+.input-field::placeholder { color: black; }
+.input-field {
+	border-radius: 10px !important;
+}
+
 /*   CHAT */
 
 #main-chat { height: 100%; }

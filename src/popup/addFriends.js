@@ -9,7 +9,7 @@ export class addFriends {
 		});
 
 		$(this.popup.body).html($(`	
-			<input id="`+ this.popup.id +`-search" class="green lighten-3 center" placeholder="Search for user..." type="text">
+			<input id="`+ this.popup.id +`-search" class="grey lighten-1 input-field center" placeholder="Search for users..." type="text">
 			<div id="`+ this.popup.id +`-results"></div>
 		`));
 
