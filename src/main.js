@@ -173,7 +173,7 @@ export class main {
 						</div>
 					`);
 
-					$(elem).on('click', (e) => this.loadChat(data.rooms[i].id, data.rooms[i].name));
+					$(elem).on('click', (e) => this.loadChat(data.rooms[i].id));
 
 					$('#menu-rooms').append(elem);
 				}
@@ -319,14 +319,14 @@ export class main {
 		this.scrollLock = false;
 	}
 
-	loadChat(id, name) {
+	loadChat(id) {
 		let chat = $(`
 			<div id="main-chat-bar" class="row blue lighten-2">
 				<div id="main-chat-back" class="col s2 waves-effect center">
 					<i class="material-icons hide-on-med-and-up">arrow_back</i>
 				</div>
 				<div class="col s8 center">
-					<span>`+ name +`</span>
+					<span id="chat-name">...</span>
 				</div>
 				<div id="chat-list" class="col s2 waves-effect center">
 					<i class="material-icons">userlist</i>
@@ -354,7 +354,7 @@ export class main {
 			$('#main-chat').removeClass('hide-on-small-only');
 		}
 
-		this.currentRoomId = id;
+		this.currentRoomId    = id;
 
 		$('#main-chat').fadeOut(() => {
 			$('#main-chat').html(chat).fadeIn();
@@ -383,18 +383,25 @@ export class main {
 				}
 			});
 
-			chatapp.socket.emit('action', 'messages', {
+			chatapp.socket.emit('action', 'rooms', {
 				type: 'get',
 				roomId: id
 			}, (data) => {
-				$('#main-chat-input input').prop('disabled', false).prop('placeholder', 'Type a message...');
-				$('#chat-progress').slideUp();
+				$('#chat-name').text(data.name);
 
-				console.log(data.messages);
+				chatapp.socket.emit('action', 'messages', {
+					type: 'get',
+					roomId: id
+				}, (data) => {
+					$('#main-chat-input input').prop('disabled', false).prop('placeholder', 'Type a message...');
+					$('#chat-progress').slideUp();
 
-				for (var i = 0; i < data.messages.length; i++) this.parseChat(data.messages[i]);
-				$('#main-chat-msg').get()[0].scrollTop = 9999;
+					for (var i = 0; i < data.messages.length; i++) this.parseChat(data.messages[i]);
+					$('#main-chat-msg').get()[0].scrollTop = 9999;
+				});
+				
 			});
+
 		});
 	}
 }
