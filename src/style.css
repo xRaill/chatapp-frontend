@@ -361,7 +361,7 @@ html, body {
 
 .info {
 	position: relative;
-	width: 39%;
+	width: 10%;
 }
 
 .info > * {
@@ -397,7 +397,8 @@ html, body {
 }
 
 @media only screen and (max-width: 600px) {
-	.chat-width { width: 100% !important; }
+	.chat-width {width: 100% !important; }
+	div[class^="msg-"]:last-child { margin-bottom: 1em; }
 }
 
 /*  TOAST */ 
