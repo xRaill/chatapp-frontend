@@ -30,8 +30,8 @@ export class addFriends {
 		this.loading = true;
 
 		clearTimeout(this.timer);
-		this.timer = setTimeout(() => chatapp.socket.emit('action', 'search', {
-			type: 'users',
+		this.timer = setTimeout(() => chatapp.socket.emit({
+			type: 'search.users',
 			search: val
 		}, (data) => {
 			this.loading = false
@@ -58,8 +58,8 @@ export class addFriends {
 				</div>
 			`);
 
-			$(elem).find('.add').on('click', (e) => chatapp.socket.emit('action', 'friends', {
-				type: 'request',
+			$(elem).find('.add').on('click', (e) => chatapp.socket.emit({
+				type: 'friends.request',
 				friendId: users[i].id
 			}, (data) => {
 				if(data.success) {
@@ -75,8 +75,8 @@ export class addFriends {
 				title:   'Unfriend',
 				message: 'Are you sure you want to unfriend <b>'+ users[i].username +'</b>?',
 				callback: (result) => {
-					if(result) chatapp.socket.emit('action', 'friends', {
-						type: 'remove',
+					if(result) chatapp.socket.emit({
+						type: 'friends.remove',
 						friendId: users[i].id
 					}, (data) => {
 						chatapp.toast('blue lighten-3', 'people', 'You removed <b>'+ users[i].username +'</b> as your friend');

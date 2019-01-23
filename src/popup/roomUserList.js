@@ -31,8 +31,8 @@ export class roomUserList {
 	}
 
 	load() {	
-		chatapp.socket.emit('action', 'rooms', {
-			type:  'users-get',
+		chatapp.socket.emit({
+			type:  'rooms.users-get',
 			roomId: this.args.roomId
 		}, (data) => {
 			if(data.success) this.display(data.users, data.owner);
@@ -71,8 +71,8 @@ export class roomUserList {
 				title:   'Destroy room',
 				message: 'Are you sure you want to destroy this room?',
 				callback: (result) => {
-					if(result) chatapp.socket.emit('action', 'rooms', {
-						type: 'remove',
+					if(result) chatapp.socket.emit({
+						type: 'rooms.remove',
 						roomId: this.args.roomId
 					}, (data) => {
 						if(data) this.popup.destroy();
@@ -84,8 +84,8 @@ export class roomUserList {
 				title:   'Remove user',
 				message: 'Are you sure you want te remove <b>'+ users[i].username +'</b> from this room?',
 				callback: (result) => {
-					if(result) chatapp.socket.emit('action', 'rooms', {
-						type:  'users-remove',
+					if(result) chatapp.socket.emit({
+						type:  'rooms.users-remove',
 						userId: users[i].id,
 						roomId: this.args.roomId 
 					}, (data) => {
@@ -98,8 +98,8 @@ export class roomUserList {
 				title:   'Leave room',
 				message: 'Are you sure you want to leave this room?',
 				callback: (result) => {
-					if(result) chatapp.socket.emit('action', 'rooms', {
-						type:  'users-leave',
+					if(result) chatapp.socket.emit({
+						type:  'rooms.users-leave',
 						roomId: this.args.roomId
 					}, (data) => {
 						if(data) this.popup.destroy();
@@ -112,8 +112,8 @@ export class roomUserList {
 				message: 'Are you sure you want to promote <b>'+ users[i].username +'</b> to room owner?<br>'+
 					'<span style="font-size:85%;"><b>WARNING:</b> You will no longer be the room owner!</span>',
 				callback: (result) => {
-					if(result) chatapp.socket.emit('action', 'rooms', {
-						type:  'users-promote',
+					if(result) chatapp.socket.emit({
+						type:  'rooms.users-promote',
 						userId: users[i].id,
 						roomId: this.args.roomId
 					}, (data) => {

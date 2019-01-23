@@ -50,7 +50,7 @@ export class main {
 	beforeEvents() {
 		$(window).on('resize', () => {
 			if($(window).innerWidth() <= 600){
-				if($('#main-chat-msg').length) {
+				if(this.currentRoomId) {   // <-----------------------------------------------------!!!!!!!!!!!!!!!!!
 					$('#main-chat').removeClass('hide-on-small-only');
 					$('#main-menu').slideUp();
 				} else {
@@ -71,7 +71,9 @@ export class main {
 	}
 
 	afterEvents() {
-		$('#logout').on('click', () => chatapp.socket.emit('action', 'logout', {}, (data) => {
+		$('#logout').on('click', () => chatapp.socket.emit({
+			type: 'logout'
+		}, (data) => {
 			if(data.success) {
 				chatapp.router.goTo('login');
 				localStorage.removeItem('authToken');
@@ -159,8 +161,8 @@ export class main {
 			</div>
 		`));
 
-		chatapp.socket.emit('action', 'rooms', {
-			type: 'get'
+		chatapp.socket.emit({
+			type: 'rooms.get'
 		}, (data) => {
 			if(data.success) {
 
@@ -190,8 +192,8 @@ export class main {
 			</div>
 		`));
 
-		chatapp.socket.emit('action', 'friends', {
-			type: 'get'
+		chatapp.socket.emit({
+			type: 'friends.get'
 		}, (data) => {
 
 			if(data.success) {
@@ -229,8 +231,8 @@ export class main {
 								title:   'Unfriend',
 								message: 'Are you sure you want to unfriend <b>'+ data.friends[i].username +'</b>?',
 								callback: (result) => {
-									if(result) chatapp.socket.emit('action', 'friends', {
-										type: 'remove',
+									if(result) chatapp.socket.emit({
+										type: 'friends.remove',
 										friendId: data.friends[i].id
 									}, (data2) => {
 										if(data2) {
@@ -371,14 +373,15 @@ export class main {
 			$('#main-chat-back').on('click', (e) => {
 				$('#main-menu').slideDown();
 				$('#main-chat > *').fadeOut((e) => $(e.target).remove());
+				delete this.currentRoomId;
 			});
 
 			$('#main-chat-input').on('submit', (e) => {
 				e.preventDefault();
 				let input = $(e.target).find('input');
 				if(input.val().length <= 255 && input.val().length) {
-					chatapp.socket.emit('action', 'messages', {
-						type: 'send',
+					chatapp.socket.emit({
+						type: 'messages.send',
 						roomId: id,
 						message: input.val()
 					});
@@ -386,14 +389,14 @@ export class main {
 				}
 			});
 
-			chatapp.socket.emit('action', 'rooms', {
-				type: 'get',
+			chatapp.socket.emit({
+				type: 'rooms.get',
 				roomId: id
 			}, (data) => {
 				$('#chat-name').text(data.name);
 
-				chatapp.socket.emit('action', 'messages', {
-					type: 'get',
+				chatapp.socket.emit({
+					type: 'messages.get',
 					roomId: id
 				}, (data) => {
 					$('#main-chat-input input').prop('disabled', false).prop('placeholder', 'Type a message...');

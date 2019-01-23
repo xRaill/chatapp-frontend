@@ -30,7 +30,8 @@ class chatapp {
 	connected() {
 		console.log('connected');
 
-		this.socket.emit('action', 'authenticate', {
+		this.socket.emit({
+			type: 'authenticate',
 			token: localStorage.getItem('authToken')
 		}, (data) => {
 			if(data.success) {

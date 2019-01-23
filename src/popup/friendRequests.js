@@ -28,8 +28,8 @@ export class friendRequests {
 	}
 
 	load() {
-		chatapp.socket.emit('action', 'friends', {
-			type: 'get-requests'
+		chatapp.socket.emit({
+			type: 'friends.get-requests'
 		}, (data) => {
 			if(data.success) this.display(data.friends);
 		});
@@ -61,8 +61,8 @@ export class friendRequests {
 				</div>
 			`);
 
-			$(elem).find('.accept').on('click', (e) => chatapp.socket.emit('action', 'friends', {
-				type: 'accept',
+			$(elem).find('.accept').on('click', (e) => chatapp.socket.emit({
+				type: 'friends.accept',
 				friendId: friends[i].id
 			}, (data) => {
 				if(data.success) {
@@ -75,8 +75,8 @@ export class friendRequests {
 				}
 			}));
 
-			$(elem).find('.deny').on('click', (e) => chatapp.socket.emit('action', 'friends', {
-				type: 'deny',
+			$(elem).find('.deny').on('click', (e) => chatapp.socket.emit({
+				type: 'friends.deny',
 				friendId: friends[i].id
 			}, (data) => {
 				if(data.success) {

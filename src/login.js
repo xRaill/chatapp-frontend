@@ -81,7 +81,8 @@ export class login {
 			// Small delay
 			setTimeout(() => {
 				// Check login info
-				chatapp.socket.emit('action', 'login', {
+				chatapp.socket.emit({
+					type: 'login',
 					username: username,
 					password: password
 				}, (data) => {

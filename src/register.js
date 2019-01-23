@@ -96,7 +96,8 @@ export class register {
 			// Small delay
 			setTimeout(() => {
 				// Check login info
-				chatapp.socket.emit('action', 'register', {
+				chatapp.socket.emit({
+					type: 'register',
 					username: username,
 					password: password,
 					passrpt:  passrpt

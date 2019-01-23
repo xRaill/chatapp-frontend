@@ -36,8 +36,8 @@ export class chatUserAdd {
 		this.loading = true;
 
 		clearTimeout(this.timer);
-		this.timer = setTimeout(() => chatapp.socket.emit('action', 'search', {
-			type:  'friends',
+		this.timer = setTimeout(() => chatapp.socket.emit({
+			type:  'search.friends',
 			roomId: this.args.roomId,
 			search: val
 		}, (data) => {
@@ -66,8 +66,8 @@ export class chatUserAdd {
 			$(elem).find('.add').on('click', (e) => chatapp.getPopup('confirm', {
 				title:   'Add user to room',
 				message: 'Are you sure you want to add <b>'+ users.username +'</b> to this room?',
-				callback: (result) => chatapp.socket.emit('action', 'rooms', {
-					type:  'users-add',
+				callback: (result) => chatapp.socket.emit({
+					type:  'rooms.users-add',
 					userId: users[i].id,
 					roomId: this.args.roomId
 				}, (data) => {
@@ -85,8 +85,8 @@ export class chatUserAdd {
 				title:   'Remove from room',
 				message: 'Are you sure you want to remove <b>'+ users[i].username +'</b> from this room?',
 				callback: (result) => {
-					if(result) chatapp.socket.emit('action', 'rooms', {
-						type: 'users-remove',
+					if(result) chatapp.socket.emit({
+						type: 'rooms.users-remove',
 						userId: users[i].id,
 						roomId: this.args.roomId
 					}, (data) => {
