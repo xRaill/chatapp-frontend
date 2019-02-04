@@ -31,6 +31,16 @@ export class main {
 			</div>
 		`);
 
+		$.fn.isInViewport = function() {
+		    let elementTop = $(this).offset().top;
+		    let elementBottom = elementTop + $(this).outerHeight();
+
+		    let viewportTop = $(window).scrollTop();
+		    let viewportBottom = viewportTop + $(window).height();
+
+		    return elementBottom > viewportTop && elementTop < viewportBottom;
+		};
+
 		$('#app').fadeOut(() => {
 			$('#app').html(this.app).fadeIn(() => {
 				this.beforeEvents();
@@ -271,21 +281,17 @@ export class main {
 
 	messageAdd(messages) {
 		if(!messages) return;
-		let wrapper = $('#main-chat-msg');
-		let lastMsg = wrapper.find('*:last');
-		let raw = wrapper.get()[0];
 		for (let i = 0; i < messages.length; i++) this.parseChat(messages[i]);
-		if(lastMsg.offset().top - wrapper.offset().top + lastMsg.height() / 3*2 < wrapper.innerHeight()) raw.scrollTop = raw.scrollHeight;
 	}
 
-	parseChat(message) {
+	parseChat(message, initial = false) {
 		let side = message.userId == localStorage.getItem('userId') ? 'right' : 'left';
 		let user = side == 'right' ? 'You' : message.username;
 		let time = new Date(message.createdAt).toLocaleString().slice(10, -3);
 		let date = new Date(message.createdAt).toLocaleDateString();
 
 		let ele = $(`
-			<div class="msg-`+ side +`">
+			<div class="msg-`+ side +`" id="msg-`+ message.id +`">
 				<div class="date center">`+ date +`</div>
 				<span class="msg">`+ message.message +`</span>
 				<div class="info">
@@ -317,7 +323,12 @@ export class main {
 		}
 
 		$('#main-chat-msg').append(ele);
-		this.scrollLock = false;
+
+		if(initial || $('#main-chat-msg > div:last').isInViewport()) {
+			$('#main-chat-msg > div:last')[0].scrollIntoView({
+				behavior: initial ? 'instant' : 'smooth'
+			});
+		}
 	}
 
 	loadChat(id) {
@@ -365,8 +376,6 @@ export class main {
 
 			$('#main-chat-input input').characterCounter();
 
-			$('#main-chat-msg').on('wheel', (e) => { if(self.scrollLock) return e.preventDefault() });
-
 			$('#chat-list').on('click', () => chatapp.getPopup('roomUserList', { roomId: id }));
 			$('#chat-add').on('click', () => chatapp.getPopup('chatUserAdd', { roomId: id }));
 
@@ -402,8 +411,7 @@ export class main {
 					$('#main-chat-input input').prop('disabled', false).prop('placeholder', 'Type a message...');
 					$('#chat-progress').slideUp();
 
-					for (var i = 0; i < data.messages.length; i++) this.parseChat(data.messages[i]);
-					$('#main-chat-msg').get()[0].scrollTop = 9999;
+					for (var i = 0; i < data.messages.length; i++) this.parseChat(data.messages[i], true);
 				});
 				
 			});
