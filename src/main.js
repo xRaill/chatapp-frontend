@@ -60,7 +60,7 @@ export class main {
 	beforeEvents() {
 		$(window).on('resize', () => {
 			if($(window).innerWidth() <= 600){
-				if(this.currentRoomId) {   // <-----------------------------------------------------!!!!!!!!!!!!!!!!!
+				if(this.currentRoomId) {
 					$('#main-chat').removeClass('hide-on-small-only');
 					$('#main-menu').slideUp();
 				} else {
@@ -73,7 +73,7 @@ export class main {
 		chatapp.socket.on('rooms-reload', () => this.roomsLoad());
 
 		chatapp.socket.on('friends-request', (friend) => {
-			chatapp.toast('blue lighten-3', 'people', friend.username + ' send you a friend request') ;
+			chatapp.toast('blue lighten-3', 'people', friend.username + ' send you a friend request');
 			this.loadFriends();
 		});
 
@@ -279,19 +279,86 @@ export class main {
 		});
 	}
 
-	messageAdd(messages) {
+	messageAdd(messages, initial = false) {
 		if(!messages) return;
-		for (let i = 0; i < messages.length; i++) this.parseChat(messages[i]);
+
+		for (let i = 0; i < messages.length; i++) this.parseChat(messages[i], initial);
+
+		if(messages[0].roomId == this.currentRoomId) {
+
+			let date = $('#main-chat-msg .date:last').text().split('-').reverse().join('-');
+			let time = $('#main-chat-msg .time:last').text();
+			let datetime = new Date(date +'T'+ time +':'+ new Date().getSeconds());
+
+			if($('#main-chat-msg > div').length && !initial) {
+
+				$(document).off('focus');
+				$('#main-chat-msg').off('scroll')
+
+				if(document.hasFocus() && $('#main-chat-msg > div:last').isInViewport()) chatapp.socket.emit({
+					type:  'rooms.read',
+					roomId: messages[0].roomId
+				}, (data) => {
+					if(data.success) $('#main-chat-msg .new').slideUp(() => $('#main-chat-msg .new').remove());
+				});
+
+				else if(!document.hasFocus() && $('#main-chat-msg > div:last > .msg').isInViewport()) {
+					$(document).one('focus', () => setTimeout(() => chatapp.socket.emit({
+						type:  'rooms.read',
+						roomId: messages[0].roomId
+					}, (data) => {
+						if(data.success) $('#main-chat-msg .new').slideUp(() => $('#main-chat-msg .new').remove());
+					}), 3000));
+				}
+
+				else if(!document.hasFocus() && !$('#main-chat-msg > div:last > .msg').isInViewport()) {
+					$('#main-chat-msg').off('scroll').on('scroll', (e) => {
+						if($('#main-chat-msg > div:last').isInViewport()) {
+							$(e.target).off('scroll');
+							setTimeout(() => chatapp.socket.emit({
+								type:  'rooms.read',
+								roomId: messages[0].roomId,
+								date:   datetime
+							}, (data) => {
+								if(data.success) $('#main-chat-msg .new').slideUp(() => $('#main-chat-msg .new').remove());
+							}), 3000);
+						}
+					});
+				}
+			}
+		
+			else if($('#main-chat-msg .new').length && initial) $('#main-chat-msg').off('scroll').on('scroll', (e) => {
+				if($('#main-chat-msg > div:last').isInViewport()) setTimeout(() => {
+					$(e.target).off('scroll');
+					chatapp.socket.emit({
+						type:  'rooms.read',
+						roomId: messages[0].roomId
+					}, (data) => {
+						if(data.success) $('#main-chat-msg .new').slideUp(() => $('#main-chat-msg .new').remove());
+					});
+				}, 3000);
+			});
+		}
+
+		if($('#room-'+ messages[0].roomId).length) {
+			let lastMsg  = messages[messages.length - 1];
+			let username = lastMsg.username == localStorage.username ? 'You' : lastMsg.username;
+
+			$('#room-'+ lastMsg.roomId).find('.last-msg').slideUp(100, () => {
+				$('#room-'+ lastMsg.roomId).find('.last-msg').text(username + ': ' + lastMsg.message).slideDown(100);
+			});
+		}
 	}
 
 	parseChat(message, initial = false) {
 		let side = message.userId == localStorage.getItem('userId') ? 'right' : 'left';
 		let user = side == 'right' ? 'You' : message.username;
-		let time = new Date(message.createdAt).toLocaleString().slice(10, -3);
+		let time = new Date(message.createdAt).toLocaleString().slice(9, -3);
 		let date = new Date(message.createdAt).toLocaleDateString();
 
 		let ele = $(`
 			<div class="msg-`+ side +`" id="msg-`+ message.id +`">
+				<div class="new center">New message(s)</div>
 				<div class="date center">`+ date +`</div>
 				<span class="msg">`+ message.message +`</span>
 				<div class="info">
@@ -300,6 +367,8 @@ export class main {
 				</div>
 			</div>
 		`);
+
+		if($('#main-chat-msg .new').length || message.read) $(ele).find('.new').remove();
 
 		let list = $('#main-chat-msg').children();
 
@@ -324,11 +393,11 @@ export class main {
 
 		$('#main-chat-msg').append(ele);
 
-		if(initial || $('#main-chat-msg > div:last').isInViewport()) {
-			$('#main-chat-msg > div:last')[0].scrollIntoView({
-				behavior: initial ? 'instant' : 'smooth'
-			});
-		}
+		let last = $('#main-chat-msg > div:last');
+
+		if(!initial && last.length && last.isInViewport()) $('#main-chat-msg > div:last')[0].scrollIntoView({
+			behavior: 'smooth'
+		});
 	}
 
 	loadChat(id) {
@@ -393,8 +462,7 @@ export class main {
 						type: 'messages.send',
 						roomId: id,
 						message: input.val()
-					});
-					input.val('');
+					}, (data) => input.val(''));
 				}
 			});
 
@@ -411,7 +479,16 @@ export class main {
 					$('#main-chat-input input').prop('disabled', false).prop('placeholder', 'Type a message...');
 					$('#chat-progress').slideUp();
 
-					for (var i = 0; i < data.messages.length; i++) this.parseChat(data.messages[i], true);
+					this.messageAdd(data.messages, true);
+					
+					if($('#main-chat-msg .new').length) {
+						$('#main-chat-msg').animate({
+							scrollTop: $('#main-chat-msg .new').offset().top / 7 * 3
+						});
+						setTimeout(() => $('#main-chat-msg .new')[0].scrollIntoView({
+							block: 'center'
+						}), 900);
+					} else $('#main-chat-msg > div:last')[0].scrollIntoView();
 				});
 				
 			});

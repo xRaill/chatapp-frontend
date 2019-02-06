@@ -348,6 +348,22 @@ html, body {
 	flex-wrap: wrap;
 }
 
+.new {
+	width: 100%;
+	font-size: 1.1em;
+	color: #b1c240;
+	padding: 1em; 
+}
+
+.new:after {
+	display: block;
+	content: '';
+	height: 1px;
+	width: 80%;
+	margin: 0 auto;
+	background-image: linear-gradient(to right, #EED, #b1b540, #eee);
+}
+
 .date { width: 100%; }
 
 .date:after {
