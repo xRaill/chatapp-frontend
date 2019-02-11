@@ -178,7 +178,7 @@ html, body {
 	text-overflow: ellipsis;
 }
 
-#menu-friends-add {
+#menu-friends-add, #menu-rooms-add {
 	position: fixed;
 	width: 56px;
 	left: 20%;
@@ -187,7 +187,7 @@ html, body {
 }
 
 @media only screen and (max-width: 600px) {
-	#menu-friends-add {
+	#menu-friends-add, #menu-rooms-add {
 		left: 80%;
 		bottom: 2%;
 	}
@@ -226,7 +226,6 @@ html, body {
 	min-width: 30em;
 	margin-top: -10%;
 }
-
 .popup-top {
 	height: 7%;
 	padding: 0 4vw;
@@ -239,10 +238,10 @@ html, body {
 	transform: translateX(40vw);
 }
 
-.popup-body {
-	overflow-y: auto;
-	height: 80%;
-}
+.popup-body { overflow-y: auto; }
+
+.popup-sm .popup-body { height: 80%; }
+.popup-md .popup-body { height: 90%; }
 
 .popout-bottom {
 	position: fixed;
