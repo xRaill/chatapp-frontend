@@ -20,9 +20,11 @@ export class main {
 					<div id="menu-list">
 						<div id="menu-rooms"></div>
 						<div id="menu-friends"></div>
-						<div id="menu-friends-add" 
-							class="btn-floating btn-large green waves-effect waves-light scale-transition scale-out">
+						<div id="menu-friends-add" class="btn-floating btn-large green waves-effect waves-light scale-transition scale-out">
 							<i class="large material-icons">search</i>
+						</div>
+						<div id="menu-rooms-add" class="btn-floating btn-large green waves-effect waves-light scale-transition">
+							<i class="large material-icons">add</i>
 						</div>
 					</div>
 				</div>
@@ -96,18 +98,21 @@ export class main {
 		$('#main-menu').on('click', '#main-chats', (e) => {
 			$(e.target).parent().removeClass('moveRight').addClass('moveLeft');
 			$('#menu-friends-add').addClass('scale-out');
+			$('#menu-rooms-add').removeClass('scale-out');
 			$('#menu-list').animate({
 				'margin-left': '0',  
 			});
 		}).on('click', '#main-users', (e) => {
 			$(e.target).parent().removeClass('moveLeft').addClass('moveRight')
 			$('#menu-friends-add').removeClass('scale-out');
+			$('#menu-rooms-add').addClass('scale-out');
 			$('#menu-list').animate({
 				'margin-left': '-' + $('#menu-list').width()/2,  
 			});
 		});
 
 		$('#menu-friends-add').on('click', (e) => chatapp.getPopup('addFriends'));
+		$('#menu-rooms-add').on('click', (e) => chatapp.getPopup('addRooms'));
 
 		$('#menu-list').on('touchstart', (e) => {
 			let width = $('#menu-list').width()*-1;
