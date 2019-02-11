@@ -432,14 +432,14 @@ export class main {
 
 			<div id="main-chat-msg" class="row chat-width"></div>
 
-			<form id="main-chat-input" class="blue lighten-2 row chat-width">
+			<div id="main-chat-input" class="blue lighten-2 row chat-width">
 				<div id="main-input-wrapper" class="col s9 m10 input-field">
-					<input type="text" data-length="255" placeholder="Loading messages..." disabled>
+					<textarea data-length="255" placeholder="Loading messages..." class="materialize-textarea" disabled></textarea>
 				</div>
 				<div class="col s1 center">
 					<button id="main-chat-send" class="btn green waves-effect waves-light">Send</button>
 				</div>
-			</form>
+			</div>
 		`);
 
 		if($(window).innerWidth() <= 600) {
@@ -452,7 +452,7 @@ export class main {
 		$('#main-chat').fadeOut(() => {
 			$('#main-chat').html(chat).fadeIn();
 
-			$('#main-chat-input input').characterCounter();
+			$('#main-chat-input textarea').characterCounter();
 
 			$('#chat-list').on('click', () => chatapp.getPopup('roomUserList', { roomId: id }));
 			$('#chat-add').on('click', () => chatapp.getPopup('chatFriendAdd', { roomId: id }));
@@ -464,15 +464,22 @@ export class main {
 				delete this.currentRoomId;
 			});
 
-			$('#main-chat-input').on('submit', (e) => {
+			$('#main-chat-input textarea').on('keypress', (e) => {
+				if(e.originalEvent.key == 'Enter') $('#main-chat-send').trigger('click');
+			});
+
+			$('#main-chat-send').on('click', (e) => {
 				e.preventDefault();
-				let input = $(e.target).find('input');
+				let input = $('#main-chat-input').find('textarea');
 				if(input.val().length <= 255 && input.val().length) {
 					chatapp.socket.emit({
 						type: 'messages.send',
 						roomId: id,
 						message: input.val()
-					}, (data) => input.val(''));
+					}, (data) => {
+						input.val('');
+						M.textareaAutoResize(input);
+					});
 				}
 			});
 
@@ -486,7 +493,7 @@ export class main {
 					type: 'messages.get',
 					roomId: id
 				}, (data) => {
-					$('#main-chat-input input').prop('disabled', false).prop('placeholder', 'Type a message...');
+					$('#main-chat-input textarea').prop('disabled', false).prop('placeholder', 'Type a message...');
 					$('#chat-progress').slideUp();
 
 					this.messageAdd(data.messages, true);
