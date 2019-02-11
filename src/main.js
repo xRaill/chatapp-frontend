@@ -451,7 +451,7 @@ export class main {
 			$('#main-chat-input input').characterCounter();
 
 			$('#chat-list').on('click', () => chatapp.getPopup('roomUserList', { roomId: id }));
-			$('#chat-add').on('click', () => chatapp.getPopup('chatUserAdd', { roomId: id }));
+			$('#chat-add').on('click', () => chatapp.getPopup('chatFriendAdd', { roomId: id }));
 
 			$('#main-chat-back').on('click', (e) => {
 				$('#main-menu').slideDown();

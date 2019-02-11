@@ -1,11 +1,11 @@
 let popup = require('./popup.js').popup;
 
-export class chatUserAdd {
+export class chatFriendAdd {
 
 	constructor(args = {}) {
 		this.popup = new popup({
-			id:    'chatUserAdd',
-			title: 'Add user'
+			id:    'chatFriendAdd',
+			title: 'Add friend'
 		});
 
 		this.args = args;
