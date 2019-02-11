@@ -190,7 +190,11 @@ export class main {
 						</div>
 					`);
 
-					$(elem).on('click', (e) => this.loadChat(data.rooms[i].id));
+					$(elem).on('click', (e) => {
+						this.loadChat(data.rooms[i].id);
+						$('#menu-rooms .active').removeClass('active');
+						$(e.target).closest('.room').addClass('active');
+					});
 
 					$('#menu-rooms').append(elem);
 				}
@@ -454,8 +458,9 @@ export class main {
 			$('#chat-add').on('click', () => chatapp.getPopup('chatFriendAdd', { roomId: id }));
 
 			$('#main-chat-back').on('click', (e) => {
+				$('#menu-rooms .active').removeClass('active');
 				$('#main-menu').slideDown();
-				$('#main-chat > *').fadeOut((e) => $(e.target).remove());
+				$('#main-chat > *').fadeOut(() => $('#main-chat > *').remove());
 				delete this.currentRoomId;
 			});
 
