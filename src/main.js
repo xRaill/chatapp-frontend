@@ -310,7 +310,7 @@ export class main {
 			let event = (e) => {
 				if($('#msgTop').isInViewport()) {
 					let date = $('#main-chat-msg .date:first').text().split('-').reverse().join('-');
-					let time = $('#main-chat-msg .time:first').text().replace(' ', '');
+					let time = $('#main-chat-msg .time:first').text();
 					let datetime = new Date(date +'T'+ time +':'+ new Date().getSeconds());
 					
 					ele.find('.progress').slideDown();
@@ -341,7 +341,7 @@ export class main {
 		if(messages[0].roomId == this.currentRoomId) {
 
 			let date = $('#main-chat-msg .date:last').text().split('-').reverse().join('-');
-			let time = $('#main-chat-msg .time:last').text().replace(' ', '');
+			let time = $('#main-chat-msg .time:last').text();
 			let datetime = new Date(date +'T'+ time +':'+ new Date().getSeconds());
 
 			if($('#main-chat-msg > div').length && !initial) {
@@ -394,9 +394,11 @@ export class main {
 	}
 
 	parseChat(message, initial = false, reverse = false, lastI = false) {
+		if($('#msg-'+ message.id).length) return;
+
 		let side = message.userId == localStorage.getItem('userId') ? 'right' : 'left';
 		let user = side == 'right' ? 'You' : message.username;
-		let time = new Date(message.createdAt).toLocaleString().slice(9, -3);
+		let time = new Date(message.createdAt).toLocaleString().split(' ')[1].slice(0, -3);
 		let date = new Date(message.createdAt).toLocaleDateString();
 
 		let ele = $(`
