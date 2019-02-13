@@ -288,15 +288,60 @@ export class main {
 		});
 	}
 
-	messageAdd(messages, initial = false) {
+	messageAdd(messages, initial = false, reverse = false) {
 		if(!messages) return;
 
-		for (let i = 0; i < messages.length; i++) this.parseChat(messages[i], initial);
+		if(reverse) $('#msgProgress')[0].scrollIntoView();
+
+		if(reverse) messages = messages.reverse();
+		for (let i = 0; i < messages.length; i++) this.parseChat(messages[i], initial, reverse, reverse ? i == messages.length -1 : i == 0);
+
+		if(reverse) setTimeout(() => $('#msgProgress').slideUp(() => $('#msgProgress').remove()), 500);
+
+		if(messages.length == 50) {
+			let ele = $(`
+				<div id="msgTop">
+					<div class="progress" style="display:none;">
+						<div class="indeterminate"></div>
+					</div>
+				</div>
+			`);
+
+			let event = (e) => {
+				if($('#msgTop').isInViewport()) {
+					let date = $('#main-chat-msg .date:first').text().split('-').reverse().join('-');
+					let time = $('#main-chat-msg .time:first').text().replace(' ', '');
+					let datetime = new Date(date +'T'+ time +':'+ new Date().getSeconds());
+					
+					ele.find('.progress').slideDown();
+
+					chatapp.socket.emit({
+						type: 'messages.get',
+						roomId: this.currentRoomId,
+						before: datetime
+					}, (data) => {
+						if(data.success) {
+							ele.remove();
+							$('#main-chat-msg').prepend($(`
+								<div id="msgProgress" class="progress">
+								<div class="indeterminate"></div>
+								</div>
+							`));
+							this.messageAdd(data.messages, false, true);
+						}
+					});
+				} else $('#main-chat-msg').one('scroll', event);
+			};
+
+			setTimeout(() => $('#main-chat-msg').one('scroll', event), 1000);
+
+			$('#main-chat-msg').prepend(ele);
+		}
 
 		if(messages[0].roomId == this.currentRoomId) {
 
 			let date = $('#main-chat-msg .date:last').text().split('-').reverse().join('-');
-			let time = $('#main-chat-msg .time:last').text();
+			let time = $('#main-chat-msg .time:last').text().replace(' ', '');
 			let datetime = new Date(date +'T'+ time +':'+ new Date().getSeconds());
 
 			if($('#main-chat-msg > div').length && !initial) {
@@ -321,9 +366,8 @@ export class main {
 				}
 
 				else if(!document.hasFocus() && !$('#main-chat-msg > div:last > .msg').isInViewport()) {
-					$('#main-chat-msg').off('scroll').on('scroll', (e) => {
+					let event = (e) => {
 						if($('#main-chat-msg > div:last').isInViewport()) {
-							$(e.target).off('scroll');
 							setTimeout(() => chatapp.socket.emit({
 								type:  'rooms.read',
 								roomId: messages[0].roomId,
@@ -331,8 +375,10 @@ export class main {
 							}, (data) => {
 								if(data.success) $('#main-chat-msg .new').slideUp(() => $('#main-chat-msg .new').remove());
 							}), 5000);
-						}
-					});
+						} else $('#main-chat-msg').one('scroll', event);
+					}
+
+					$('#main-chat-msg').one('scroll', event);
 				}
 			}
 		}
@@ -347,14 +393,14 @@ export class main {
 		}
 	}
 
-	parseChat(message, initial = false) {
+	parseChat(message, initial = false, reverse = false, lastI = false) {
 		let side = message.userId == localStorage.getItem('userId') ? 'right' : 'left';
 		let user = side == 'right' ? 'You' : message.username;
 		let time = new Date(message.createdAt).toLocaleString().slice(9, -3);
 		let date = new Date(message.createdAt).toLocaleDateString();
 
 		let ele = $(`
-			<div class="msg-`+ side +`" id="msg-`+ message.id +`">
+			<div class="msg-`+ side + (reverse ? '' : ' animate') + (lastI ? ' lastMsg' : '') +`" id="msg-`+ message.id +`">
 				<div class="new center">New message(s)</div>
 				<div class="date center">`+ date +`</div>
 				<span class="msg">`+ message.message +`</span>
@@ -369,6 +415,8 @@ export class main {
 
 		let list = $('#main-chat-msg').children();
 
+		if(reverse) list = list.toArray().reverse();
+
 		let userCompleet = false, timeCompleet = false, dateCompleet = false;
 
 		for (let i = list.length - 1; i >= 0; i--) {
@@ -376,7 +424,7 @@ export class main {
 			let time2 = $(list[i]).find('.time');
 			let date2 = $(list[i]).find('.date');
 
-			if(user2.length && !userCompleet) if(user == user2.text()) $(ele).find('.user').remove();
+			if(user2.length && !userCompleet || lastI) if(user == user2.text() && !lastI) $(ele).find('.user').remove();
 			else userCompleet = true;
 
 			if(time2.length && !timeCompleet) if(time == time2.text()) $(ele).find('.time').remove();
@@ -388,7 +436,8 @@ export class main {
 			if(userCompleet && timeCompleet && dateCompleet) break;
 		}
 
-		$('#main-chat-msg').append(ele);
+		if(reverse) $('#main-chat-msg').prepend(ele);
+		else $('#main-chat-msg').append(ele);
 
 		let last = $('#main-chat-msg > div:last');
 

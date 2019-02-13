@@ -331,7 +331,7 @@ html, body {
 	padding-top: 50px;
 }
 
-#main-chat-msg > * {
+#main-chat-msg > .animate {
 	animation: floatIn 1s ease-out;
 	flex: 1;
 }
