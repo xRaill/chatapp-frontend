@@ -312,12 +312,12 @@ export class main {
 				});
 
 				else if(!document.hasFocus() && $('#main-chat-msg > div:last > .msg').isInViewport()) {
-					$(document).one('focus', () => setTimeout(() => chatapp.socket.emit({
+					$(document).off('focus').one('focus', () => setTimeout(() => chatapp.socket.emit({
 						type:  'rooms.read',
 						roomId: messages[0].roomId
 					}, (data) => {
 						if(data.success) $('#main-chat-msg .new').slideUp(() => $('#main-chat-msg .new').remove());
-					}), 3000));
+					}), 5000));
 				}
 
 				else if(!document.hasFocus() && !$('#main-chat-msg > div:last > .msg').isInViewport()) {
@@ -330,23 +330,11 @@ export class main {
 								date:   datetime
 							}, (data) => {
 								if(data.success) $('#main-chat-msg .new').slideUp(() => $('#main-chat-msg .new').remove());
-							}), 3000);
+							}), 5000);
 						}
 					});
 				}
 			}
-		
-			else if($('#main-chat-msg .new').length && initial) $('#main-chat-msg').off('scroll').on('scroll', (e) => {
-				if($('#main-chat-msg > div:last').isInViewport()) setTimeout(() => {
-					$(e.target).off('scroll');
-					chatapp.socket.emit({
-						type:  'rooms.read',
-						roomId: messages[0].roomId
-					}, (data) => {
-						if(data.success) $('#main-chat-msg .new').slideUp(() => $('#main-chat-msg .new').remove());
-					});
-				}, 3000);
-			});
 		}
 
 		if($('#room-'+ messages[0].roomId).length) {
