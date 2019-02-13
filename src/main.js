@@ -383,7 +383,7 @@ export class main {
 			}
 		}
 
-		if($('#room-'+ messages[0].roomId).length) {
+		if(!reverse && $('#room-'+ messages[0].roomId).length) {
 			let lastMsg  = messages[messages.length - 1];
 			let username = lastMsg.username == localStorage.username ? 'You' : lastMsg.username;
 
